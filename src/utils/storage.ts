@@ -6,7 +6,7 @@ import ApiService from './api';
 
 export class StorageService {
   // Configuration: Use API by default, fallback to local storage
-  private static USE_API: boolean = false; // Temporarily disable API for testing
+  private static USE_API: boolean = process.env.EXPO_PUBLIC_ENVIRONMENT === 'production'; 
   private static OFFLINE_MODE: boolean = false;
 
   // Storage keys for local fallback

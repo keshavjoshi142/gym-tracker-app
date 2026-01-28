@@ -9,7 +9,7 @@ const workoutsRouter = require('./routes/workouts');
 const progressRouter = require('./routes/progress');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Initialize database
 const db = new Database();
@@ -19,7 +19,9 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
 app.use(cors({
-  origin: ['http://localhost:8081', 'exp://localhost:19000'],
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-app-domain.com', 'exp://your-expo-app'] 
+    : ['http://localhost:8081', 'exp://localhost:19000', 'http://localhost:19006'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
