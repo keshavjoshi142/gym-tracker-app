@@ -39,3 +39,24 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Database
+server/database/*.db
+server/database/*.db-journal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs
+*.log
+
+# Coverage directory
+coverage/
+*.lcov
+
+# Azure
+.azure/
