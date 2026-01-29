@@ -1,3 +1,12 @@
+const path = require('path');
+
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' 
+  ? '.env.production' 
+  : '.env.development';
+  
+require('dotenv').config({ path: path.join(__dirname, envFile) });
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -20,9 +29,11 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.CORS_ORIGIN || 'https://gymtracker-web.onrender.com'] 
-    : ['http://localhost:8081', 'exp://localhost:19000', 'http://localhost:19006'],
-  credentials: true
+    ? (process.env.CORS_ORIGIN || 'https://gymtracker-web.onrender.com').split(',')
+    : (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:19006,http://localhost:8081,http://localhost:19000,exp://localhost:19000').split(','),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

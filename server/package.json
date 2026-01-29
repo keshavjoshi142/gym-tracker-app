@@ -9,18 +9,25 @@
     "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "sqlite3": "^5.1.6",
-    "uuid": "^9.0.1",
-    "helmet": "^7.1.0",
     "compression": "^1.7.4",
-    "morgan": "^1.10.0"
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.17.2",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
   },
-  "keywords": ["fitness", "workout", "tracking", "react-native", "api"],
+  "keywords": [
+    "fitness",
+    "workout",
+    "tracking",
+    "react-native",
+    "api"
+  ],
   "author": "GymTracker Team",
   "license": "MIT"
 }

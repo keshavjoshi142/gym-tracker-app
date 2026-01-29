@@ -1,97 +1,114 @@
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
+
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' 
+  ? '.env.production' 
+  : '.env.development';
+  
+require('dotenv').config({ path: path.join(__dirname, '..', envFile) });
 const { v4: uuidv4 } = require('uuid');
 
 class Database {
   constructor() {
-    const dbPath = path.join(__dirname, 'gymtracker.db');
-    this.db = new sqlite3.Database(dbPath, (err) => {
-      if (err) {
-        console.error('Error opening database:', err.message);
-      } else {
-        console.log('Connected to SQLite database');
-      }
+    // PostgreSQL connection configuration
+    this.pool = new Pool({
+      connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/gymtracker',
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+
+    // Handle pool events
+    this.pool.on('connect', () => {
+      console.log('Connected to PostgreSQL database');
+    });
+
+    this.pool.on('error', (err) => {
+      console.error('PostgreSQL pool error:', err);
     });
   }
 
   async initialize() {
-    return new Promise((resolve, reject) => {
-      this.db.serialize(() => {
-        // Create exercises table
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS exercises (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            category TEXT NOT NULL,
-            muscle_groups TEXT NOT NULL,
-            description TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          )
-        `);
+    const client = await this.pool.connect();
+    
+    try {
+      // Create exercises table
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS exercises (
+          id VARCHAR(255) PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          category VARCHAR(255) NOT NULL,
+          muscle_groups JSONB NOT NULL,
+          description TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
 
-        // Create workouts table
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS workouts (
-            id TEXT PRIMARY KEY,
-            date TEXT NOT NULL,
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          )
-        `);
+      // Create workouts table
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS workouts (
+          id VARCHAR(255) PRIMARY KEY,
+          date VARCHAR(255) NOT NULL,
+          notes TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
 
-        // Create workout_exercises table
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS workout_exercises (
-            id TEXT PRIMARY KEY,
-            workout_id TEXT NOT NULL,
-            exercise_id TEXT NOT NULL,
-            order_index INTEGER NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
-            FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
-          )
-        `);
+      // Create workout_exercises table
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS workout_exercises (
+          id VARCHAR(255) PRIMARY KEY,
+          workout_id VARCHAR(255) NOT NULL,
+          exercise_id VARCHAR(255) NOT NULL,
+          order_index INTEGER NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
+          FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
+        )
+      `);
 
-        // Create workout_sets table
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS workout_sets (
-            id TEXT PRIMARY KEY,
-            workout_exercise_id TEXT NOT NULL,
-            set_number INTEGER NOT NULL,
-            weight REAL NOT NULL DEFAULT 0,
-            reps INTEGER NOT NULL DEFAULT 0,
-            notes TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (workout_exercise_id) REFERENCES workout_exercises (id) ON DELETE CASCADE
-          )
-        `);
+      // Create workout_sets table
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS workout_sets (
+          id VARCHAR(255) PRIMARY KEY,
+          workout_exercise_id VARCHAR(255) NOT NULL,
+          set_number INTEGER NOT NULL,
+          weight DECIMAL NOT NULL DEFAULT 0,
+          reps INTEGER NOT NULL DEFAULT 0,
+          notes TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (workout_exercise_id) REFERENCES workout_exercises (id) ON DELETE CASCADE
+        )
+      `);
 
-        // Create personal_records table
-        this.db.run(`
-          CREATE TABLE IF NOT EXISTS personal_records (
-            id TEXT PRIMARY KEY,
-            exercise_id TEXT NOT NULL,
-            max_weight REAL NOT NULL DEFAULT 0,
-            max_reps INTEGER NOT NULL DEFAULT 0,
-            max_volume REAL NOT NULL DEFAULT 0,
-            date TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE,
-            UNIQUE(exercise_id)
-          )
-        `, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            this.seedDefaultExercises().then(() => {
-              resolve();
-            }).catch(reject);
-          }
-        });
-      });
-    });
+      // Create personal_records table
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS personal_records (
+          id VARCHAR(255) PRIMARY KEY,
+          exercise_id VARCHAR(255) NOT NULL,
+          max_weight DECIMAL NOT NULL DEFAULT 0,
+          max_reps INTEGER NOT NULL DEFAULT 0,
+          max_volume DECIMAL NOT NULL DEFAULT 0,
+          date VARCHAR(255) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE,
+          UNIQUE(exercise_id)
+        )
+      `);
+
+      await this.seedDefaultExercises();
+      console.log('✅ Database initialized successfully');
+      
+    } catch (error) {
+      console.error('❌ Database initialization failed:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async seedDefaultExercises() {
@@ -140,52 +157,44 @@ class Database {
 
   // Exercise methods
   async getAllExercises() {
-    return new Promise((resolve, reject) => {
-      this.db.all('SELECT * FROM exercises ORDER BY name', (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          const exercises = rows.map(row => ({
-            id: row.id,
-            name: row.name,
-            category: row.category,
-            muscleGroups: JSON.parse(row.muscle_groups),
-            description: row.description
-          }));
-          resolve(exercises);
-        }
-      });
-    });
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query('SELECT * FROM exercises ORDER BY name');
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        category: row.category,
+        muscleGroups: row.muscle_groups,
+        description: row.description
+      }));
+    } finally {
+      client.release();
+    }
   }
 
   async createExercise(exercise) {
-    return new Promise((resolve, reject) => {
+    const client = await this.pool.connect();
+    try {
       const id = exercise.id || uuidv4();
-      const sql = `
-        INSERT OR IGNORE INTO exercises (id, name, category, muscle_groups, description)
-        VALUES (?, ?, ?, ?, ?)
-      `;
+      const result = await client.query(
+        `INSERT INTO exercises (id, name, category, muscle_groups, description) 
+         VALUES ($1, $2, $3, $4, $5) 
+         ON CONFLICT (id) DO NOTHING 
+         RETURNING *`,
+        [id, exercise.name, exercise.category, JSON.stringify(exercise.muscleGroups), exercise.description || '']
+      );
       
-      this.db.run(sql, [
-        id,
-        exercise.name,
-        exercise.category,
-        JSON.stringify(exercise.muscleGroups),
-        exercise.description || ''
-      ], function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ id, ...exercise });
-        }
-      });
-    });
+      return result.rows[0] || { id, ...exercise };
+    } finally {
+      client.release();
+    }
   }
 
   // Workout methods
   async getAllWorkouts() {
-    return new Promise((resolve, reject) => {
-      const sql = `
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
         SELECT 
           w.*,
           we.id as we_id, we.exercise_id, we.order_index,
@@ -196,318 +205,206 @@ class Database {
         LEFT JOIN exercises e ON we.exercise_id = e.id
         LEFT JOIN workout_sets ws ON we.id = ws.workout_exercise_id
         ORDER BY w.date DESC, we.order_index, ws.set_number
-      `;
+      `);
 
-      this.db.all(sql, (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          const workoutsMap = new Map();
+      const workoutsMap = new Map();
 
-          rows.forEach(row => {
-            if (!workoutsMap.has(row.id)) {
-              workoutsMap.set(row.id, {
-                id: row.id,
-                date: row.date,
-                notes: row.notes || '',
-                exercises: []
-              });
-            }
-
-            const workout = workoutsMap.get(row.id);
-            
-            if (row.we_id) {
-              let exercise = workout.exercises.find(ex => ex.id === row.we_id);
-              if (!exercise) {
-                exercise = {
-                  id: row.we_id,
-                  exerciseId: row.exercise_id,
-                  name: row.exercise_name,
-                  category: row.category,
-                  muscleGroups: JSON.parse(row.muscle_groups || '[]'),
-                  sets: []
-                };
-                workout.exercises.push(exercise);
-              }
-
-              if (row.set_id) {
-                exercise.sets.push({
-                  id: row.set_id,
-                  weight: row.weight,
-                  reps: row.reps,
-                  notes: row.set_notes || ''
-                });
-              }
-            }
+      result.rows.forEach(row => {
+        if (!workoutsMap.has(row.id)) {
+          workoutsMap.set(row.id, {
+            id: row.id,
+            date: row.date,
+            notes: row.notes || '',
+            exercises: []
           });
+        }
 
-          resolve(Array.from(workoutsMap.values()));
+        const workout = workoutsMap.get(row.id);
+        
+        if (row.we_id) {
+          let exercise = workout.exercises.find(ex => ex.id === row.we_id);
+          if (!exercise) {
+            exercise = {
+              id: row.we_id,
+              exerciseId: row.exercise_id,
+              name: row.exercise_name,
+              category: row.category,
+              muscleGroups: row.muscle_groups || [],
+              sets: []
+            };
+            workout.exercises.push(exercise);
+          }
+
+          if (row.set_id) {
+            exercise.sets.push({
+              id: row.set_id,
+              weight: parseFloat(row.weight),
+              reps: parseInt(row.reps),
+              notes: row.set_notes || ''
+            });
+          }
         }
       });
-    });
+
+      return Array.from(workoutsMap.values());
+    } finally {
+      client.release();
+    }
   }
 
   async createWorkout(workout) {
-    return new Promise((resolve, reject) => {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      
       const workoutId = workout.id || uuidv4();
       
-      this.db.serialize(() => {
-        this.db.run('BEGIN TRANSACTION');
+      // Insert workout
+      await client.query(
+        'INSERT INTO workouts (id, date, notes) VALUES ($1, $2, $3)',
+        [workoutId, workout.date, workout.notes || '']
+      );
 
-        // Insert workout
-        const workoutSql = 'INSERT INTO workouts (id, date, notes) VALUES (?, ?, ?)';
-        this.db.run(workoutSql, [workoutId, workout.date, workout.notes || ''], (err) => {
-          if (err) {
-            this.db.run('ROLLBACK');
-            reject(err);
-            return;
-          }
+      // Insert exercises and sets
+      for (let i = 0; i < workout.exercises.length; i++) {
+        const exercise = workout.exercises[i];
+        const exerciseId = uuidv4();
+        
+        await client.query(
+          'INSERT INTO workout_exercises (id, workout_id, exercise_id, order_index) VALUES ($1, $2, $3, $4)',
+          [exerciseId, workoutId, exercise.exerciseId, i]
+        );
 
-          // Insert exercises and sets
-          let completed = 0;
-          const total = workout.exercises.length;
+        // Insert sets
+        for (let j = 0; j < exercise.sets.length; j++) {
+          const set = exercise.sets[j];
+          await client.query(
+            'INSERT INTO workout_sets (id, workout_exercise_id, set_number, weight, reps, notes) VALUES ($1, $2, $3, $4, $5, $6)',
+            [uuidv4(), exerciseId, j + 1, set.weight, set.reps, set.notes || '']
+          );
+        }
+      }
 
-          if (total === 0) {
-            this.db.run('COMMIT');
-            resolve({ id: workoutId, ...workout });
-            return;
-          }
-
-          workout.exercises.forEach((exercise, index) => {
-            const exerciseId = uuidv4();
-            const exerciseSql = `
-              INSERT INTO workout_exercises (id, workout_id, exercise_id, order_index)
-              VALUES (?, ?, ?, ?)
-            `;
-
-            this.db.run(exerciseSql, [exerciseId, workoutId, exercise.exerciseId, index], (err) => {
-              if (err) {
-                this.db.run('ROLLBACK');
-                reject(err);
-                return;
-              }
-
-              // Insert sets
-              if (exercise.sets.length === 0) {
-                completed++;
-                if (completed === total) {
-                  this.db.run('COMMIT');
-                  resolve({ id: workoutId, ...workout });
-                }
-                return;
-              }
-
-              let setsCompleted = 0;
-              exercise.sets.forEach((set, setIndex) => {
-                const setSql = `
-                  INSERT INTO workout_sets (id, workout_exercise_id, set_number, weight, reps, notes)
-                  VALUES (?, ?, ?, ?, ?, ?)
-                `;
-
-                this.db.run(setSql, [
-                  uuidv4(),
-                  exerciseId,
-                  setIndex + 1,
-                  set.weight,
-                  set.reps,
-                  set.notes || ''
-                ], (err) => {
-                  if (err) {
-                    this.db.run('ROLLBACK');
-                    reject(err);
-                    return;
-                  }
-
-                  setsCompleted++;
-                  if (setsCompleted === exercise.sets.length) {
-                    completed++;
-                    if (completed === total) {
-                      this.db.run('COMMIT');
-                      this.updatePersonalRecords(workout).then(() => {
-                        resolve({ id: workoutId, ...workout });
-                      }).catch(reject);
-                    }
-                  }
-                });
-              });
-            });
-          });
-        });
-      });
-    });
+      await this.updatePersonalRecords(workout);
+      await client.query('COMMIT');
+      
+      return { id: workoutId, ...workout };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async updateWorkout(id, workout) {
-    return new Promise((resolve, reject) => {
-      this.db.serialize(() => {
-        this.db.run('BEGIN TRANSACTION');
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // Update workout
+      await client.query(
+        'UPDATE workouts SET date = $1, notes = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+        [workout.date, workout.notes || '', id]
+      );
 
-        // Update workout
-        const workoutSql = 'UPDATE workouts SET date = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
-        this.db.run(workoutSql, [workout.date, workout.notes || '', id], (err) => {
-          if (err) {
-            this.db.run('ROLLBACK');
-            reject(err);
-            return;
-          }
+      // Delete existing exercises and sets
+      await client.query('DELETE FROM workout_exercises WHERE workout_id = $1', [id]);
 
-          // Delete existing exercises and sets
-          this.db.run('DELETE FROM workout_exercises WHERE workout_id = ?', [id], (err) => {
-            if (err) {
-              this.db.run('ROLLBACK');
-              reject(err);
-              return;
-            }
+      // Insert new exercises and sets
+      for (let i = 0; i < workout.exercises.length; i++) {
+        const exercise = workout.exercises[i];
+        const exerciseId = uuidv4();
+        
+        await client.query(
+          'INSERT INTO workout_exercises (id, workout_id, exercise_id, order_index) VALUES ($1, $2, $3, $4)',
+          [exerciseId, id, exercise.exerciseId, i]
+        );
 
-            // Insert new exercises and sets (same logic as createWorkout)
-            let completed = 0;
-            const total = workout.exercises.length;
+        for (let j = 0; j < exercise.sets.length; j++) {
+          const set = exercise.sets[j];
+          await client.query(
+            'INSERT INTO workout_sets (id, workout_exercise_id, set_number, weight, reps, notes) VALUES ($1, $2, $3, $4, $5, $6)',
+            [uuidv4(), exerciseId, j + 1, set.weight, set.reps, set.notes || '']
+          );
+        }
+      }
 
-            if (total === 0) {
-              this.db.run('COMMIT');
-              resolve({ id, ...workout });
-              return;
-            }
-
-            workout.exercises.forEach((exercise, index) => {
-              const exerciseId = uuidv4();
-              const exerciseSql = `
-                INSERT INTO workout_exercises (id, workout_id, exercise_id, order_index)
-                VALUES (?, ?, ?, ?)
-              `;
-
-              this.db.run(exerciseSql, [exerciseId, id, exercise.exerciseId, index], (err) => {
-                if (err) {
-                  this.db.run('ROLLBACK');
-                  reject(err);
-                  return;
-                }
-
-                if (exercise.sets.length === 0) {
-                  completed++;
-                  if (completed === total) {
-                    this.db.run('COMMIT');
-                    resolve({ id, ...workout });
-                  }
-                  return;
-                }
-
-                let setsCompleted = 0;
-                exercise.sets.forEach((set, setIndex) => {
-                  const setSql = `
-                    INSERT INTO workout_sets (id, workout_exercise_id, set_number, weight, reps, notes)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                  `;
-
-                  this.db.run(setSql, [
-                    uuidv4(),
-                    exerciseId,
-                    setIndex + 1,
-                    set.weight,
-                    set.reps,
-                    set.notes || ''
-                  ], (err) => {
-                    if (err) {
-                      this.db.run('ROLLBACK');
-                      reject(err);
-                      return;
-                    }
-
-                    setsCompleted++;
-                    if (setsCompleted === exercise.sets.length) {
-                      completed++;
-                      if (completed === total) {
-                        this.db.run('COMMIT');
-                        this.updatePersonalRecords(workout).then(() => {
-                          resolve({ id, ...workout });
-                        }).catch(reject);
-                      }
-                    }
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
+      await this.updatePersonalRecords(workout);
+      await client.query('COMMIT');
+      
+      return { id, ...workout };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async deleteWorkout(id) {
-    return new Promise((resolve, reject) => {
-      this.db.run('DELETE FROM workouts WHERE id = ?', [id], function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ deleted: this.changes > 0 });
-        }
-      });
-    });
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query('DELETE FROM workouts WHERE id = $1', [id]);
+      return { deleted: result.rowCount > 0 };
+    } finally {
+      client.release();
+    }
   }
 
   // Personal Records methods
   async updatePersonalRecords(workout) {
-    for (const exercise of workout.exercises) {
-      if (exercise.sets.length === 0) continue;
+    const client = await this.pool.connect();
+    try {
+      for (const exercise of workout.exercises) {
+        if (exercise.sets.length === 0) continue;
 
-      const maxWeight = Math.max(...exercise.sets.map(s => s.weight));
-      const maxReps = Math.max(...exercise.sets.map(s => s.reps));
-      const maxVolume = Math.max(...exercise.sets.map(s => s.weight * s.reps));
+        const maxWeight = Math.max(...exercise.sets.map(s => s.weight));
+        const maxReps = Math.max(...exercise.sets.map(s => s.reps));
+        const maxVolume = Math.max(...exercise.sets.map(s => s.weight * s.reps));
 
-      await new Promise((resolve, reject) => {
-        const sql = `
+        await client.query(`
           INSERT INTO personal_records (id, exercise_id, max_weight, max_reps, max_volume, date)
-          VALUES (?, ?, ?, ?, ?, ?)
-          ON CONFLICT(exercise_id) DO UPDATE SET
-            max_weight = MAX(max_weight, excluded.max_weight),
-            max_reps = MAX(max_reps, excluded.max_reps),
-            max_volume = MAX(max_volume, excluded.max_volume),
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (exercise_id) DO UPDATE SET
+            max_weight = GREATEST(personal_records.max_weight, EXCLUDED.max_weight),
+            max_reps = GREATEST(personal_records.max_reps, EXCLUDED.max_reps),
+            max_volume = GREATEST(personal_records.max_volume, EXCLUDED.max_volume),
             date = CASE 
-              WHEN excluded.max_weight > max_weight OR 
-                   excluded.max_reps > max_reps OR 
-                   excluded.max_volume > max_volume 
-              THEN excluded.date 
-              ELSE date 
+              WHEN EXCLUDED.max_weight > personal_records.max_weight OR 
+                   EXCLUDED.max_reps > personal_records.max_reps OR 
+                   EXCLUDED.max_volume > personal_records.max_volume 
+              THEN EXCLUDED.date 
+              ELSE personal_records.date 
             END,
             updated_at = CURRENT_TIMESTAMP
-        `;
-
-        this.db.run(sql, [
-          uuidv4(),
-          exercise.exerciseId,
-          maxWeight,
-          maxReps,
-          maxVolume,
-          workout.date
-        ], (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
+        `, [uuidv4(), exercise.exerciseId, maxWeight, maxReps, maxVolume, workout.date]);
+      }
+    } finally {
+      client.release();
     }
   }
 
   async getAllPersonalRecords() {
-    return new Promise((resolve, reject) => {
-      this.db.all('SELECT * FROM personal_records', (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows.map(row => ({
-            exerciseId: row.exercise_id,
-            maxWeight: row.max_weight,
-            maxReps: row.max_reps,
-            maxVolume: row.max_volume,
-            date: row.date
-          })));
-        }
-      });
-    });
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query('SELECT * FROM personal_records');
+      return result.rows.map(row => ({
+        exerciseId: row.exercise_id,
+        maxWeight: parseFloat(row.max_weight),
+        maxReps: parseInt(row.max_reps),
+        maxVolume: parseFloat(row.max_volume),
+        date: row.date
+      }));
+    } finally {
+      client.release();
+    }
   }
 
   async getExerciseProgress(exerciseId) {
-    return new Promise((resolve, reject) => {
-      const sql = `
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
         SELECT 
           w.date, 
           e.name as exercise_name,
@@ -516,77 +413,65 @@ class Database {
         JOIN workout_exercises we ON w.id = we.workout_id
         JOIN exercises e ON we.exercise_id = e.id
         JOIN workout_sets ws ON we.id = ws.workout_exercise_id
-        WHERE e.id = ?
+        WHERE e.id = $1
         ORDER BY w.date ASC, ws.set_number
-      `;
+      `, [exerciseId]);
 
-      this.db.all(sql, [exerciseId], (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          const workoutsMap = new Map();
+      const workoutsMap = new Map();
 
-          rows.forEach(row => {
-            if (!workoutsMap.has(row.date)) {
-              workoutsMap.set(row.date, {
-                date: row.date,
-                sets: []
-              });
-            }
-            
-            workoutsMap.get(row.date).sets.push({
-              weight: row.weight,
-              reps: row.reps
-            });
-          });
-
-          const workouts = Array.from(workoutsMap.values()).map(workout => {
-            const maxWeight = Math.max(...workout.sets.map(s => s.weight));
-            const totalVolume = workout.sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
-            
-            return {
-              date: workout.date,
-              maxWeight,
-              totalVolume,
-              sets: workout.sets.length,
-              allSets: workout.sets
-            };
-          });
-
-          const personalRecord = workouts.length > 0 ? {
-            maxWeight: Math.max(...workouts.map(w => w.maxWeight)),
-            maxReps: Math.max(...rows.map(r => r.reps)),
-            maxVolume: Math.max(...workouts.map(w => w.totalVolume)),
-            date: workouts[workouts.length - 1]?.date || new Date().toISOString()
-          } : {
-            maxWeight: 0,
-            maxReps: 0,
-            maxVolume: 0,
-            date: new Date().toISOString()
-          };
-
-          resolve({
-            exerciseId,
-            exerciseName: rows[0]?.exercise_name || '',
-            workouts,
-            personalRecord
+      result.rows.forEach(row => {
+        if (!workoutsMap.has(row.date)) {
+          workoutsMap.set(row.date, {
+            date: row.date,
+            sets: []
           });
         }
+        
+        workoutsMap.get(row.date).sets.push({
+          weight: parseFloat(row.weight),
+          reps: parseInt(row.reps)
+        });
       });
-    });
+
+      const workouts = Array.from(workoutsMap.values()).map(workout => {
+        const maxWeight = Math.max(...workout.sets.map(s => s.weight));
+        const totalVolume = workout.sets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+        
+        return {
+          date: workout.date,
+          maxWeight,
+          totalVolume,
+          sets: workout.sets.length,
+          allSets: workout.sets
+        };
+      });
+
+      const personalRecord = workouts.length > 0 ? {
+        maxWeight: Math.max(...workouts.map(w => w.maxWeight)),
+        maxReps: Math.max(...result.rows.map(r => parseInt(r.reps))),
+        maxVolume: Math.max(...workouts.map(w => w.totalVolume)),
+        date: workouts[workouts.length - 1]?.date || new Date().toISOString()
+      } : {
+        maxWeight: 0,
+        maxReps: 0,
+        maxVolume: 0,
+        date: new Date().toISOString()
+      };
+
+      return {
+        exerciseId,
+        exerciseName: result.rows[0]?.exercise_name || '',
+        workouts,
+        personalRecord
+      };
+    } finally {
+      client.release();
+    }
   }
 
-  close() {
-    return new Promise((resolve) => {
-      this.db.close((err) => {
-        if (err) {
-          console.error('Error closing database:', err.message);
-        } else {
-          console.log('Database connection closed');
-        }
-        resolve();
-      });
-    });
+  async close() {
+    await this.pool.end();
+    console.log('Database connection closed');
   }
 }
 
