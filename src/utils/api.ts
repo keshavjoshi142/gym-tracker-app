@@ -1,9 +1,20 @@
-// Check if in development mode - React Native compatible
-const isDev = process.env.NODE_ENV === 'development';
+// Get API URL from environment variables
+const getApiUrl = () => {
+  // Use Expo public environment variable
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return `${process.env.EXPO_PUBLIC_API_URL}/api`;
+  }
+  
+  // Fallback to localhost for development
+  return 'http://localhost:3001/api';
+};
 
-const API_BASE_URL = isDev
-  ? 'http://localhost:3000/api' 
-  : 'https://your-production-server.com/api';
+const API_BASE_URL = getApiUrl();
+
+// Debug: Log the API URL being used
+console.log('🌐 API Base URL:', API_BASE_URL);
+console.log('🔧 Environment:', process.env.EXPO_PUBLIC_ENVIRONMENT);
+console.log('📡 Raw API URL:', process.env.EXPO_PUBLIC_API_URL);
 
 interface ApiOptions {
   method?: string;

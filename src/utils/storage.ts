@@ -5,9 +5,18 @@ import { DEFAULT_EXERCISES } from '@/data/exercises';
 import ApiService from './api';
 
 export class StorageService {
-  // Configuration: Use API by default, fallback to local storage
+  // Configuration: Use API in production, local storage in development
   private static USE_API: boolean = process.env.EXPO_PUBLIC_ENVIRONMENT === 'production'; 
   private static OFFLINE_MODE: boolean = false;
+  
+  // Debug: Log storage configuration
+  static {
+    console.log('💾 Storage Config:', {
+      USE_API: this.USE_API,
+      ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT,
+      API_URL: process.env.EXPO_PUBLIC_API_URL
+    });
+  }
 
   // Storage keys for local fallback
   private static STORAGE_KEYS = {

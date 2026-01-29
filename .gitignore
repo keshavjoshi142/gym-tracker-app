@@ -32,6 +32,12 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env.local
+
+# Keep environment templates
+!.env
+!.env.development
+!.env.production
 
 # typescript
 *.tsbuildinfo
@@ -43,6 +49,8 @@ yarn-error.*
 # Database
 server/database/*.db
 server/database/*.db-journal
+*.sql
+*.dump
 
 # IDE
 .vscode/
