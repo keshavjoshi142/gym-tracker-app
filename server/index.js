@@ -20,7 +20,7 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-app-domain.com', 'exp://your-expo-app'] 
+    ? [process.env.CORS_ORIGIN || 'https://gymtracker-web.onrender.com'] 
     : ['http://localhost:8081', 'exp://localhost:19000', 'http://localhost:19006'],
   credentials: true
 }));

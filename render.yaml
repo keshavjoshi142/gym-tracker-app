@@ -1,17 +1,6 @@
 version: "1"
 services:
   - type: web
-    name: gymtracker-frontend
-    env: node
-    buildCommand: npm install && npm run build:web
-    startCommand: npx serve dist -p $PORT
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: EXPO_PUBLIC_API_URL
-        value: https://gymtracker-api.onrender.com
-        
-  - type: web
     name: gymtracker-api
     env: node
     rootDir: ./server
@@ -20,5 +9,16 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: CORS_ORIGIN
-        value: https://gymtracker-frontend.onrender.com
+      - key: PORT
+        value: 3001
+        
+  - type: static
+    name: gymtracker-web
+    env: static
+    buildCommand: npm install && npm run build:web
+    staticPublishPath: ./dist
+    envVars:
+      - key: EXPO_PUBLIC_API_URL
+        value: https://gymtracker-api.onrender.com
+      - key: EXPO_PUBLIC_ENVIRONMENT
+        value: production
