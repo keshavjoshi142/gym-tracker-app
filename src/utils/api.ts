@@ -1,10 +1,16 @@
+import Constants from 'expo-constants';
+
 // Get API URL from environment variables
 const getApiUrl = () => {
-  // Use Expo public environment variable
+  console.log('🔍 Determining API URL...');
+    
+  // Then try Expo public environment variable (build-time only)
   if (process.env.EXPO_PUBLIC_API_URL) {
+    console.log('✅ Using API URL from process.env:', process.env.EXPO_PUBLIC_API_URL);
     return `${process.env.EXPO_PUBLIC_API_URL}/api`;
   }
   
+  console.log('⚠️ No API URL found in Constants or environment variables, using localhost fallback');
   // Fallback to localhost for development
   return 'http://localhost:3001/api';
 };
@@ -13,8 +19,11 @@ const API_BASE_URL = getApiUrl();
 
 // Debug: Log the API URL being used
 console.log('🌐 API Base URL:', API_BASE_URL);
-console.log('🔧 Environment:', process.env.EXPO_PUBLIC_ENVIRONMENT);
-console.log('📡 Raw API URL:', process.env.EXPO_PUBLIC_API_URL);
+console.log('🔧 Environment from Constants:', Constants.expoConfig?.extra?.environment);
+console.log('🔧 Environment from process.env:', process.env.EXPO_PUBLIC_ENVIRONMENT);
+console.log('📡 API URL from Constants:', Constants.expoConfig?.extra?.apiUrl);
+console.log('📡 API URL from process.env:', process.env.EXPO_PUBLIC_API_URL);
+console.log('⚙️ All Constants Extra:', Constants.expoConfig?.extra);
 
 interface ApiOptions {
   method?: string;

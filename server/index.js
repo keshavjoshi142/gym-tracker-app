@@ -29,7 +29,7 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? (process.env.CORS_ORIGIN || 'https://gymtracker-web.onrender.com').split(',')
+    ? (process.env.CORS_ORIGIN || 'https://gymtracker-web.onrender.com,http://localhost:3000').split(',')
     : (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:19006,http://localhost:8081,http://localhost:19000,exp://localhost:19000').split(','),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

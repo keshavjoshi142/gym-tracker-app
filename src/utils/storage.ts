@@ -3,10 +3,12 @@ import { Exercise, Workout, PersonalRecord, ExerciseProgress } from '@/types';
 import { generateId } from './helpers';
 import { DEFAULT_EXERCISES } from '@/data/exercises';
 import ApiService from './api';
+import Constants from 'expo-constants';
 
 export class StorageService {
   // Configuration: Use API in production, local storage in development
-  private static USE_API: boolean = process.env.EXPO_PUBLIC_ENVIRONMENT === 'production'; 
+  private static USE_API: boolean = Constants.expoConfig?.extra?.environment === 'production' || 
+                                    process.env.EXPO_PUBLIC_ENVIRONMENT === 'production'; 
   private static OFFLINE_MODE: boolean = false;
   
   // Debug: Log storage configuration
@@ -160,7 +162,24 @@ export class StorageService {
       if (isOnline) {
         // Check if workout exists (has id and it's not a temp id)
         if (workout.id && !workout.id.startsWith('temp-')) {
-          await ApiService.updateWorkout(workout.id, workout);
+          try {
+            await ApiService.updateWorkout(workout.id, workout);
+          } catch (updateError: any) {
+            console.log('Update failed, trying to create workout instead:', updateError.message);
+            // If update fails (workout doesn't exist in DB), try creating it
+            const workoutToCreate = { ...workout };
+            const originalId = workoutToCreate.id;
+            delete (workoutToCreate as any).id; // Remove id for creation
+            
+            try {
+              const savedWorkout = await ApiService.createWorkout(workoutToCreate);
+              workout.id = savedWorkout.id; // Update workout with new real id
+              console.log('Successfully created workout with new ID:', workout.id);
+            } catch (createError) {
+              console.error('Failed to create workout after update failed:', createError);
+              throw updateError; // Throw original update error
+            }
+          }
         } else {
           const workoutToCreate = { ...workout };
           if (workoutToCreate.id) {
