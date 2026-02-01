@@ -14,8 +14,10 @@ exports.up = function(knex) {
       table.text('instructions');
       table.string('equipment', 100);
       table.string('difficulty_level', 20).defaultTo('beginner');
+      table.boolean('is_custom').defaultTo(false);
+      table.boolean('is_public').defaultTo(true);
+      table.string('created_by_user_id');
       table.timestamps(true, true);
-      
     }),
     
     // Create workouts table (base table that exists in original schema)
