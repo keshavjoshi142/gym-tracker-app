@@ -1,11 +1,17 @@
 // Knex.js configuration file
 require('dotenv').config();
 
+const environment = process.env.NODE_ENV || 'development';
+const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/gymtracker_dev';
+
+console.log(`🔍 Knex environment: ${environment}`);
+console.log(`🔗 Database connection: ${connectionString}`);
+
 module.exports = {
   development: {
     client: 'postgresql',
     connection: {
-      connectionString: process.env.DATABASE_URL || 'postgresql://localhost/gymtracker_dev',
+      connectionString: connectionString,
       ssl: false
     },
     migrations: {
@@ -20,7 +26,7 @@ module.exports = {
   production: {
     client: 'postgresql',
     connection: {
-      connectionString: process.env.DATABASE_URL,
+      connectionString: connectionString,
       ssl: { rejectUnauthorized: false }
     },
     migrations: {

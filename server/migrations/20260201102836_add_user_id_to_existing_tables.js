@@ -52,7 +52,10 @@ exports.up = async function(knex) {
     const hasCreatedByColumn = await knex.schema.hasColumn('exercises', 'created_by_user_id');
     
     if (!hasCreatedByColumn) {
+      console.log('  📝 Adding user-related columns to exercises table...');
+      
       await knex.schema.table('exercises', function(table) {
+        table.text('instructions'); // Add missing instructions column
         table.string('created_by_user_id');
         table.boolean('is_custom').defaultTo(false);
         table.boolean('is_public').defaultTo(true);
@@ -89,6 +92,7 @@ exports.down = async function(knex) {
       table.dropColumn('created_by_user_id');
       table.dropColumn('is_custom');
       table.dropColumn('is_public');
+      table.dropColumn('instructions'); // Remove instructions column in rollback
     });
   }
 };

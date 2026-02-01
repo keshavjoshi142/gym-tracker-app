@@ -4,7 +4,7 @@ services:
   - type: web
     name: gymtracker-api
     env: node
-    buildCommand: cd server && npm install
+    buildCommand: cd server && npm install && npm run migrate
     startCommand: cd server && node index.js
     envVars:
       - key: NODE_ENV
