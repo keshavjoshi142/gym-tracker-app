@@ -21,6 +21,9 @@ import {
   FAB,
   Searchbar,
   Chip,
+  Portal,
+  Dialog,
+  Paragraph,
 } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -61,6 +64,9 @@ const WorkoutDetailScreen: React.FC = () => {
   const [fadeAnim] = useState(new Animated.Value(1));
   const [scaleAnim] = useState(new Animated.Value(1));
   const [successAnim] = useState(new Animated.Value(0));
+  const [deleteExerciseDialogVisible, setDeleteExerciseDialogVisible] = useState(false);
+  const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null);
+  const [deleteWorkoutDialogVisible, setDeleteWorkoutDialogVisible] = useState(false);
 
   useEffect(() => {
     loadWorkoutData();
@@ -150,34 +156,70 @@ const WorkoutDetailScreen: React.FC = () => {
   };
 
   const removeExerciseFromWorkout = (exerciseId: string) => {
-    if (!workout) return;
+    console.log('removeExerciseFromWorkout called with ID:', exerciseId);
+    console.log('Current workout exercises:', workout?.exercises);
+    console.log('Opening delete exercise confirmation dialog...');
+    setExerciseToDelete(exerciseId);
+    setDeleteExerciseDialogVisible(true);
+  };
 
-    Alert.alert(
-      'Remove Exercise',
-      'Are you sure you want to remove this exercise from the workout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            const updatedWorkout = {
-              ...workout,
-              exercises: workout.exercises.filter((ex: WorkoutExercise) => ex.id !== exerciseId),
-            };
-            setWorkout(updatedWorkout);
-            
-            // Save the updated workout directly
-            try {
-              await StorageService.saveWorkout(updatedWorkout);
-            } catch (error) {
-              console.error('Error removing exercise:', error);
-              Alert.alert('Error', 'Failed to remove exercise');
-            }
-          },
-        },
-      ]
-    );
+  const confirmRemoveExercise = async () => {
+    if (!workout || !exerciseToDelete) return;
+    
+    console.log('User confirmed remove exercise:', exerciseToDelete);
+    setDeleteExerciseDialogVisible(false);
+    
+    try {
+      const updatedWorkout = {
+        ...workout,
+        exercises: workout.exercises.filter((ex: WorkoutExercise) => ex.id !== exerciseToDelete),
+      };
+      setWorkout(updatedWorkout);
+      
+      console.log('Exercise removed, saving workout...');
+      await StorageService.saveWorkout(updatedWorkout);
+      console.log('Workout saved successfully after exercise removal');
+    } catch (error) {
+      console.error('Error removing exercise:', error);
+      Alert.alert('Error', 'Failed to remove exercise');
+    } finally {
+      setExerciseToDelete(null);
+    }
+  };
+
+  const cancelRemoveExercise = () => {
+    console.log('User cancelled remove exercise');
+    setDeleteExerciseDialogVisible(false);
+    setExerciseToDelete(null);
+  };
+
+  const deleteWorkout = async () => {
+    if (!workout || isNewWorkout) return;
+
+    console.log('Delete workout button pressed');
+    setDeleteWorkoutDialogVisible(true);
+  };
+
+  const confirmDeleteWorkout = async () => {
+    if (!workout) return;
+    
+    console.log('User confirmed delete workout:', workout.id);
+    setDeleteWorkoutDialogVisible(false);
+    
+    try {
+      console.log('Calling StorageService.deleteWorkout...');
+      await StorageService.deleteWorkout(workout.id);
+      console.log('Workout deleted successfully, navigating back...');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      Alert.alert('Error', 'Failed to delete workout');
+    }
+  };
+
+  const cancelDeleteWorkout = () => {
+    console.log('User cancelled delete workout');
+    setDeleteWorkoutDialogVisible(false);
   };
 
   const addSet = async (exerciseId: string) => {
@@ -455,8 +497,8 @@ const WorkoutDetailScreen: React.FC = () => {
         <Card.Content>
           <View style={styles.exerciseHeader}>
             <View style={styles.exerciseInfo}>
-              <Title style={styles.exerciseName}>{workoutExercise.exercise.name}</Title>
-              <Text style={styles.exerciseCategory}>{workoutExercise.exercise.category}</Text>
+              <Title style={styles.exerciseName}>{workoutExercise.exercise?.name || workoutExercise.name || 'Unknown Exercise'}</Title>
+              <Text style={styles.exerciseCategory}>{workoutExercise.exercise?.category || workoutExercise.category || 'Unknown'}</Text>
             </View>
             
             <IconButton
@@ -651,6 +693,18 @@ const WorkoutDetailScreen: React.FC = () => {
                 {isFinishingWorkout ? 'Saving Workout...' : 'Finish Workout'}
               </Button>
             </Animated.View>
+
+            {!isNewWorkout && (
+              <Button
+                mode="outlined"
+                onPress={deleteWorkout}
+                style={styles.deleteButton}
+                textColor="#ff5252"
+                icon="delete"
+              >
+                Delete Workout
+              </Button>
+            )}
             
             {isNewWorkout && (
               <Animated.Text 
@@ -679,6 +733,44 @@ const WorkoutDetailScreen: React.FC = () => {
       </Animated.View>
       
       {renderSuccessAnimation()}
+
+      <Portal>
+        <Dialog visible={deleteExerciseDialogVisible} onDismiss={cancelRemoveExercise}>
+          <Dialog.Title>Remove Exercise</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>
+              Are you sure you want to remove this exercise from the workout?
+            </Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={cancelRemoveExercise}>Cancel</Button>
+            <Button 
+              onPress={confirmRemoveExercise}
+              textColor="#ff5252"
+            >
+              Remove
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        <Dialog visible={deleteWorkoutDialogVisible} onDismiss={cancelDeleteWorkout}>
+          <Dialog.Title>Delete Workout</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>
+              Are you sure you want to delete this workout? This action cannot be undone.
+            </Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={cancelDeleteWorkout}>Cancel</Button>
+            <Button 
+              onPress={confirmDeleteWorkout}
+              textColor="#ff5252"
+            >
+              Delete
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 };
@@ -904,6 +996,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  deleteButton: {
+    marginTop: 15,
+    borderColor: '#ff5252',
+    borderWidth: 1,
   },
   workoutTimer: {
     textAlign: 'center',

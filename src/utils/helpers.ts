@@ -24,10 +24,15 @@ export const formatTime = (minutes: number): string => {
 };
 
 export const calculateWorkoutStats = (exercises: WorkoutExercise[]) => {
-  const totalSets = exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
-  const totalVolume = exercises.reduce((sum, exercise) => 
-    sum + exercise.sets.reduce((exerciseSum, set) => exerciseSum + (set.weight * set.reps), 0), 0
-  );
+  const totalSets = exercises.reduce((sum, exercise) => {
+    const sets = Array.isArray(exercise.sets) ? exercise.sets : [];
+    return sum + sets.length;
+  }, 0);
+  
+  const totalVolume = exercises.reduce((sum, exercise) => {
+    const sets = Array.isArray(exercise.sets) ? exercise.sets : [];
+    return sum + sets.reduce((exerciseSum, set) => exerciseSum + (set.weight * set.reps), 0);
+  }, 0);
   
   return {
     totalExercises: exercises.length,
@@ -41,7 +46,7 @@ export const calculateSetVolume = (set: WorkoutSet): number => {
 };
 
 export const getExerciseMaxes = (sets: WorkoutSet[]) => {
-  if (sets.length === 0) {
+  if (!Array.isArray(sets) || sets.length === 0) {
     return { maxWeight: 0, maxReps: 0, maxVolume: 0 };
   }
 

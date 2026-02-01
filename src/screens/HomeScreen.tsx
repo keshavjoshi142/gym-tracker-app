@@ -8,19 +8,22 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, Title, Paragraph, Button, FAB } from 'react-native-paper';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Card, Title, Paragraph, Button, FAB, IconButton } from 'react-native-paper';
+import { useNavigation, useFocusEffect, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import { RootStackParamList, Workout, PersonalRecord } from '@/types';
+import { RootStackParamList, BottomTabParamList, Workout, PersonalRecord } from '@/types';
 import { StorageService } from '@/utils/storage';
 import { formatDate, isToday, generateId } from '@/utils/helpers';
+import { useAuth } from '@/contexts/AuthContext';
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+type HomeScreenNavigationProp = NativeStackNavigationProp<BottomTabParamList, 'Home'>;
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const { user } = useAuth();
+  
   const [recentWorkouts, setRecentWorkouts] = useState<Workout[]>([]);
   const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
   const [weekStats, setWeekStats] = useState({
@@ -88,8 +91,23 @@ const HomeScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.content}>
         <View style={styles.header}>
-          <Title style={styles.title}>Gym Tracker</Title>
-          <Text style={styles.subtitle}>Welcome back! Let's crush today's workout 💪</Text>
+          <View style={styles.headerContent}>
+            <View style={styles.headerText}>
+              <Title style={styles.title}>Gym Tracker</Title>
+              <Text style={styles.subtitle}>
+                Welcome back{user ? `, ${user.username}` : ''}! Let's crush today's workout 💪
+              </Text>
+            </View>
+            <IconButton
+              icon="account-circle"
+              size={32}
+              onPress={() => {
+                // Navigate to Profile screen using parent navigation
+                (navigation as any).navigate('Profile');
+              }}
+              iconColor="#6750A4"
+            />
+          </View>
         </View>
 
         {/* Quick Stats */}
@@ -236,6 +254,14 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingBottom: 10,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerText: {
+    flex: 1,
   },
   title: {
     fontSize: 28,

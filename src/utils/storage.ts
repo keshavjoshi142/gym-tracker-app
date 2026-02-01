@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Exercise, Workout, PersonalRecord, ExerciseProgress } from '@/types';
+import { Exercise, Workout, PersonalRecord, ExerciseProgress, User } from '@/types';
 import { generateId } from './helpers';
 import { DEFAULT_EXERCISES } from '@/data/exercises';
 import ApiService from './api';
@@ -26,6 +26,8 @@ export class StorageService {
     WORKOUTS: 'gym_tracker_workouts',
     PERSONAL_RECORDS: 'gym_tracker_personal_records',
     OFFLINE_CHANGES: 'gym_tracker_offline_changes',
+    CURRENT_USER: 'gym_tracker_current_user',
+    USERS: 'gym_tracker_users',
   };
 
   // Network connectivity check
@@ -528,5 +530,129 @@ export class StorageService {
       isOnline: !this.OFFLINE_MODE && this.USE_API,
       isOfflineMode: this.OFFLINE_MODE || !this.USE_API,
     };
+  }
+
+  // User Authentication Methods
+  static async registerUser(username: string, password: string, email?: string): Promise<User | null> {
+    try {
+      // For now, we'll use local storage. In production, this would call the API
+      const users = await this.getLocalUsers();
+      
+      // Check if username already exists
+      const existingUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+      if (existingUser) {
+        return null; // Username already exists
+      }
+
+      // Create new user
+      const newUser: User = {
+        id: generateId(),
+        username: username.trim(),
+        email: email?.trim(),
+        createdAt: new Date().toISOString(),
+        profile: {},
+      };
+
+      // Store user credentials (In production, never store plain text passwords!)
+      const userWithPassword = { ...newUser, password: password };
+      users.push(userWithPassword);
+      
+      await AsyncStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(users));
+      await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
+      
+      return newUser;
+    } catch (error) {
+      console.error('Error registering user:', error);
+      return null;
+    }
+  }
+
+  static async loginUser(username: string, password: string): Promise<User | null> {
+    try {
+      // For now, we'll use local storage. In production, this would call the API
+      const users = await this.getLocalUsers();
+      
+      const user = users.find(u => 
+        u.username.toLowerCase() === username.toLowerCase() && 
+        (u as any).password === password
+      );
+
+      if (user) {
+        // Remove password from the user object before storing as current user
+        const { password: _, ...userWithoutPassword } = user as any;
+        const currentUser = userWithoutPassword as User;
+        
+        await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+        return currentUser;
+      }
+
+      return null; // Invalid credentials
+    } catch (error) {
+      console.error('Error logging in user:', error);
+      return null;
+    }
+  }
+
+  static async getCurrentUser(): Promise<User | null> {
+    try {
+      const userData = await AsyncStorage.getItem(this.STORAGE_KEYS.CURRENT_USER);
+      if (userData) {
+        return JSON.parse(userData);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
+  static async logoutUser(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+    } catch (error) {
+      console.error('Error logging out user:', error);
+    }
+  }
+
+  private static async getLocalUsers(): Promise<any[]> {
+    try {
+      const usersData = await AsyncStorage.getItem(this.STORAGE_KEYS.USERS);
+      return usersData ? JSON.parse(usersData) : [];
+    } catch (error) {
+      console.error('Error getting local users:', error);
+      return [];
+    }
+  }
+
+  static async updateUserProfile(userId: string, profile: Partial<User['profile']>): Promise<boolean> {
+    try {
+      const currentUser = await this.getCurrentUser();
+      if (!currentUser || currentUser.id !== userId) {
+        return false;
+      }
+
+      const updatedUser = {
+        ...currentUser,
+        profile: {
+          ...currentUser.profile,
+          ...profile,
+        },
+      };
+
+      await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(updatedUser));
+      
+      // Also update in users list
+      const users = await this.getLocalUsers();
+      const userIndex = users.findIndex(u => u.id === userId);
+      if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], profile: updatedUser.profile };
+        await AsyncStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(users));
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      return false;
+    }
   }
 }

@@ -44,6 +44,21 @@ export interface PersonalRecord {
   date: string;
 }
 
+export interface User {
+  id: string;
+  username: string;
+  email?: string;
+  createdAt: string;
+  profile?: {
+    firstName?: string;
+    lastName?: string;
+    age?: number;
+    weight?: number;
+    height?: number;
+    goals?: string[];
+  };
+}
+
 export interface ExerciseProgress {
   exerciseId: string;
   exerciseName: string;
@@ -66,6 +81,8 @@ export interface ExerciseProgress {
 }
 
 export type RootStackParamList = {
+  Login: undefined;
+  Register: undefined;
   Home: undefined;
   Workouts: undefined;
   Progress: undefined;
@@ -73,6 +90,12 @@ export type RootStackParamList = {
   WorkoutDetail: { workoutId?: string };
   ExerciseDetail: { exerciseId: string };
   AddExercise: undefined;
+  Profile: undefined;
+};
+
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
 };
 
 export type BottomTabParamList = {

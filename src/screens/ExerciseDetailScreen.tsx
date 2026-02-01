@@ -120,13 +120,23 @@ const ExerciseDetailScreen: React.FC = () => {
       }),
       datasets: [
         {
-          data: recentWorkouts.map(w => w.maxWeight),
+          data: recentWorkouts.map(w => w.maxWeight || 0),
           color: (opacity = 1) => `rgba(103, 80, 164, ${opacity})`,
           strokeWidth: 3,
           withDots: true,
         },
         {
-          data: recentWorkouts.map(w => w.avgWeight),
+          data: recentWorkouts.map(w => {
+            // Calculate avgWeight from allSets if available, otherwise use approximation from volume
+            if (w.allSets && Array.isArray(w.allSets) && w.allSets.length > 0) {
+              const totalWeight = w.allSets.reduce((sum, set) => sum + (set.weight || 0), 0);
+              return totalWeight / w.allSets.length;
+            } else if (w.totalVolume && w.sets > 0) {
+              // Rough approximation: average volume per set
+              return (w.totalVolume || 0) / (w.sets || 1);
+            }
+            return w.maxWeight || 0; // fallback to maxWeight
+          }),
           color: (opacity = 1) => `rgba(76, 175, 80, ${opacity})`,
           strokeWidth: 2,
           withDots: true,
@@ -193,7 +203,7 @@ const ExerciseDetailScreen: React.FC = () => {
                 Workout Details - {new Date(expandedWorkout.date).toLocaleDateString()}
               </Text>
               <ScrollView horizontal style={styles.setsScrollView} showsHorizontalScrollIndicator={false}>
-                {(expandedWorkout.sets || []).map((set: any, index: number) => (
+                {(expandedWorkout.allSets || expandedWorkout.sets || []).map((set: any, index: number) => (
                   <View key={index} style={styles.setCard}>
                     <Text style={styles.setNumber}>Set {index + 1}</Text>
                     <Text style={styles.setWeight}>{set.weight} lbs</Text>
@@ -305,7 +315,7 @@ const ExerciseDetailScreen: React.FC = () => {
               <View style={styles.setsContainer}>
                 <Text style={styles.setsTitle}>Sets:</Text>
                 <View style={styles.setsGrid}>
-                  {workout.sets.map((set, setIndex) => (
+                  {(workout.allSets || workout.sets || []).map((set, setIndex) => (
                     <View key={setIndex} style={styles.setItem}>
                       <Text style={styles.setText}>
                         {set.weight} lbs × {set.reps}

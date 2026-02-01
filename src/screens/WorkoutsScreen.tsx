@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, Title, Paragraph, FAB, IconButton } from 'react-native-paper';
+import { Card, Title, Paragraph, FAB, IconButton, Portal, Dialog, Button } from 'react-native-paper';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -23,6 +23,8 @@ const WorkoutsScreen: React.FC = () => {
   const navigation = useNavigation<WorkoutsScreenNavigationProp>();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
 
   const loadWorkouts = async () => {
     try {
@@ -60,26 +62,36 @@ const WorkoutsScreen: React.FC = () => {
   };
 
   const deleteWorkout = (workoutId: string) => {
-    Alert.alert(
-      'Delete Workout',
-      'Are you sure you want to delete this workout? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await StorageService.deleteWorkout(workoutId);
-              await loadWorkouts();
-            } catch (error) {
-              console.error('Error deleting workout:', error);
-              Alert.alert('Error', 'Failed to delete workout');
-            }
-          },
-        },
-      ]
-    );
+    console.log('Delete workout button pressed for ID:', workoutId);
+    console.log('Opening delete confirmation dialog...');
+    setWorkoutToDelete(workoutId);
+    setDeleteDialogVisible(true);
+  };
+
+  const confirmDeleteWorkout = async () => {
+    if (!workoutToDelete) return;
+    
+    console.log('User confirmed delete for workout:', workoutToDelete);
+    setDeleteDialogVisible(false);
+    
+    try {
+      console.log('Calling StorageService.deleteWorkout...');
+      await StorageService.deleteWorkout(workoutToDelete);
+      console.log('Delete successful, reloading workouts...');
+      await loadWorkouts();
+      console.log('Workouts reloaded after delete');
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      Alert.alert('Error', 'Failed to delete workout');
+    } finally {
+      setWorkoutToDelete(null);
+    }
+  };
+
+  const cancelDeleteWorkout = () => {
+    console.log('User cancelled delete');
+    setDeleteDialogVisible(false);
+    setWorkoutToDelete(null);
   };
 
   const renderWorkout = ({ item }: { item: Workout }) => {
@@ -141,7 +153,7 @@ const WorkoutsScreen: React.FC = () => {
               <View style={styles.exercisePreview}>
                 <Text style={styles.exercisePreviewTitle}>Exercises:</Text>
                 <Text style={styles.exercisePreviewText} numberOfLines={2}>
-                  {item.exercises.map(ex => ex.exercise.name).join(', ')}
+                  {item.exercises.map(ex => ex.exercise?.name || ex.name || 'Unknown Exercise').join(', ')}
                 </Text>
               </View>
             )}
@@ -187,6 +199,26 @@ const WorkoutsScreen: React.FC = () => {
         label="New Workout"
         onPress={startNewWorkout}
       />
+
+      <Portal>
+        <Dialog visible={deleteDialogVisible} onDismiss={cancelDeleteWorkout}>
+          <Dialog.Title>Delete Workout</Dialog.Title>
+          <Dialog.Content>
+            <Paragraph>
+              Are you sure you want to delete this workout? This action cannot be undone.
+            </Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={cancelDeleteWorkout}>Cancel</Button>
+            <Button 
+              onPress={confirmDeleteWorkout}
+              textColor="#ff5252"
+            >
+              Delete
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 };
