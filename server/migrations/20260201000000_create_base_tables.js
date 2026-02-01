@@ -11,6 +11,7 @@ exports.up = function(knex) {
       table.string('category', 255).notNullable();
       table.jsonb('muscle_groups').notNullable();
       table.text('description');
+      table.text('instructions');
       table.string('equipment', 100);
       table.string('difficulty_level', 20).defaultTo('beginner');
       table.timestamps(true, true);
