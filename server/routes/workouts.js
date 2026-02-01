@@ -110,30 +110,3 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
-    });
-    
-    res.json(workout);
-  } catch (error) {
-    console.error('Error updating workout:', error);
-    res.status(500).json({ error: 'Failed to update workout' });
-  }
-});
-
-// DELETE /api/workouts/:id - Delete workout
-router.delete('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await req.db.deleteWorkout(id);
-    
-    if (result.deleted) {
-      res.json({ message: 'Workout deleted successfully' });
-    } else {
-      res.status(404).json({ error: 'Workout not found' });
-    }
-  } catch (error) {
-    console.error('Error deleting workout:', error);
-    res.status(500).json({ error: 'Failed to delete workout' });
-  }
-});
-
-module.exports = router;
