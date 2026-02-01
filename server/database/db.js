@@ -194,8 +194,8 @@ class Database {
     const client = await this.pool.connect();
     try {
       await client.query(
-        `INSERT INTO exercises (id, name, category, muscle_groups, description, instructions, equipment, difficulty_level, is_custom, is_public) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+        `INSERT INTO exercises (id, name, category, muscle_groups, description, instructions, equipment, difficulty_level, is_custom, is_public, created_by_user_id) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
          ON CONFLICT (id) DO NOTHING`,
         [
           exercise.id, 
@@ -207,7 +207,8 @@ class Database {
           exercise.equipment || '',
           exercise.difficulty_level || 'beginner',
           false, // is_custom
-          true   // is_public
+          true,  // is_public
+          null   // created_by_user_id
         ]
       );
     } finally {

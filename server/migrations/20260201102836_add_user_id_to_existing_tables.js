@@ -55,7 +55,6 @@ exports.up = async function(knex) {
       console.log('  📝 Adding user-related columns to exercises table...');
       
       await knex.schema.table('exercises', function(table) {
-        table.text('instructions'); // Add missing instructions column
         table.string('created_by_user_id');
         table.boolean('is_custom').defaultTo(false);
         table.boolean('is_public').defaultTo(true);
