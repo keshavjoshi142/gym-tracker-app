@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "knex migrate:latest",
+    "migrate:rollback": "knex migrate:rollback",
+    "migrate:status": "knex migrate:status",
+    "migrate:make": "knex migrate:make"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -17,8 +20,9 @@
     "express-rate-limit": "^8.2.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
+    "knex": "^3.1.0",
     "morgan": "^1.10.0",
-    "pg": "^8.17.2",
+    "pg": "^8.18.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

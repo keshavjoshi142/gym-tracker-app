@@ -36,172 +36,15 @@ class Database {
     const client = await this.pool.connect();
     
     try {
-      // Create users table with industry best practices
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS users (
-          id VARCHAR(255) PRIMARY KEY,
-          username VARCHAR(50) UNIQUE NOT NULL,
-          email VARCHAR(255) UNIQUE NOT NULL,
-          password_hash VARCHAR(255) NOT NULL,
-          first_name VARCHAR(100),
-          last_name VARCHAR(100),
-          date_of_birth DATE,
-          gender VARCHAR(20),
-          height_cm INTEGER,
-          weight_kg DECIMAL(5,2),
-          activity_level VARCHAR(20) DEFAULT 'moderate',
-          goals TEXT[],
-          is_active BOOLEAN DEFAULT true,
-          email_verified BOOLEAN DEFAULT false,
-          last_login TIMESTAMP,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      // Create user sessions table for secure session management
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS user_sessions (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id VARCHAR(255) NOT NULL,
-          token_hash VARCHAR(255) NOT NULL,
-          expires_at TIMESTAMP NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
-      `);
-
-      // Create exercises table (global exercises available to all users)
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS exercises (
-          id VARCHAR(255) PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
-          category VARCHAR(255) NOT NULL,
-          muscle_groups JSONB NOT NULL,
-          description TEXT,
-          instructions TEXT,
-          equipment VARCHAR(100),
-          difficulty_level VARCHAR(20) DEFAULT 'beginner',
-          is_custom BOOLEAN DEFAULT false,
-          created_by_user_id VARCHAR(255),
-          is_public BOOLEAN DEFAULT true,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE SET NULL
-        )
-      `);
-
-      // Create user_custom_exercises table for user-specific exercises
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS user_custom_exercises (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id VARCHAR(255) NOT NULL,
-          exercise_id VARCHAR(255) NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-          FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE,
-          UNIQUE(user_id, exercise_id)
-        )
-      `);
-
-      // Create workouts table (user-specific)
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS workouts (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id VARCHAR(255) NOT NULL,
-          date VARCHAR(255) NOT NULL,
-          name VARCHAR(255),
-          duration_minutes INTEGER,
-          notes TEXT,
-          is_template BOOLEAN DEFAULT false,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
-      `);
-
-      // Create workout_exercises table
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS workout_exercises (
-          id VARCHAR(255) PRIMARY KEY,
-          workout_id VARCHAR(255) NOT NULL,
-          exercise_id VARCHAR(255) NOT NULL,
-          order_index INTEGER NOT NULL,
-          target_sets INTEGER,
-          target_reps INTEGER,
-          target_weight DECIMAL(6,2),
-          rest_time_seconds INTEGER DEFAULT 60,
-          notes TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
-          FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
-        )
-      `);
-
-      // Create workout_sets table
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS workout_sets (
-          id VARCHAR(255) PRIMARY KEY,
-          workout_exercise_id VARCHAR(255) NOT NULL,
-          set_number INTEGER NOT NULL,
-          weight DECIMAL(6,2) NOT NULL DEFAULT 0,
-          reps INTEGER NOT NULL DEFAULT 0,
-          rpe DECIMAL(3,1), -- Rate of Perceived Exertion (1-10)
-          completed_at TIMESTAMP,
-          notes TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (workout_exercise_id) REFERENCES workout_exercises (id) ON DELETE CASCADE
-        )
-      `);
-
-      // Create personal_records table (user-specific)
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS personal_records (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id VARCHAR(255) NOT NULL,
-          exercise_id VARCHAR(255) NOT NULL,
-          record_type VARCHAR(50) NOT NULL, -- 'max_weight', 'max_reps', 'max_volume', '1rm_estimated'
-          value DECIMAL(8,2) NOT NULL,
-          workout_id VARCHAR(255),
-          achieved_at TIMESTAMP NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-          FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE,
-          FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE SET NULL,
-          UNIQUE(user_id, exercise_id, record_type)
-        )
-      `);
-
-      // Create body_measurements table for tracking progress
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS body_measurements (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id VARCHAR(255) NOT NULL,
-          measurement_date DATE NOT NULL,
-          weight_kg DECIMAL(5,2),
-          body_fat_percentage DECIMAL(4,2),
-          muscle_mass_kg DECIMAL(5,2),
-          measurements JSONB, -- Store various body measurements (chest, waist, arms, etc.)
-          notes TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
-      `);
-
-      // Create indexes for better performance
-      await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
-        CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
-        CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions (user_id);
-        CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions (expires_at);
-        CREATE INDEX IF NOT EXISTS idx_workouts_user_id_date ON workouts (user_id, date);
-        CREATE INDEX IF NOT EXISTS idx_workout_exercises_workout_id ON workout_exercises (workout_id);
-        CREATE INDEX IF NOT EXISTS idx_workout_sets_workout_exercise_id ON workout_sets (workout_exercise_id);
-        CREATE INDEX IF NOT EXISTS idx_personal_records_user_exercise ON personal_records (user_id, exercise_id);
-        CREATE INDEX IF NOT EXISTS idx_body_measurements_user_date ON body_measurements (user_id, measurement_date);
-      `);
-
+      // This is now a safe initialization that won't conflict with migrations
+      console.log('🔍 Checking database schema...');
+      
+      // Only create tables if they don't exist (migration-safe)
+      await this.ensureTablesExist(client);
+      
+      // Seed default exercises if the table is empty
       await this.seedDefaultExercises();
-      console.log('✅ Database initialized successfully with user authentication');
+      console.log('✅ Database initialization check completed');
       
     } catch (error) {
       console.error('❌ Database initialization failed:', error);
@@ -209,6 +52,73 @@ class Database {
     } finally {
       client.release();
     }
+  }
+
+  async ensureTablesExist(client) {
+    // Create exercises table if it doesn't exist (backward compatible)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS exercises (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        category VARCHAR(255) NOT NULL,
+        muscle_groups JSONB NOT NULL,
+        description TEXT,
+        instructions TEXT,
+        equipment VARCHAR(100),
+        difficulty_level VARCHAR(20) DEFAULT 'beginner',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create workouts table if it doesn't exist (backward compatible)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS workouts (
+        id VARCHAR(255) PRIMARY KEY,
+        date VARCHAR(255) NOT NULL,
+        name VARCHAR(255),
+        duration_minutes INTEGER,
+        notes TEXT,
+        is_template BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create workout_exercises table if it doesn't exist
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS workout_exercises (
+        id VARCHAR(255) PRIMARY KEY,
+        workout_id VARCHAR(255) NOT NULL,
+        exercise_id VARCHAR(255) NOT NULL,
+        order_index INTEGER NOT NULL,
+        target_sets INTEGER,
+        target_reps INTEGER,
+        target_weight DECIMAL(6,2),
+        rest_time_seconds INTEGER DEFAULT 60,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
+        FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create workout_sets table if it doesn't exist
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS workout_sets (
+        id VARCHAR(255) PRIMARY KEY,
+        workout_exercise_id VARCHAR(255) NOT NULL,
+        set_number INTEGER NOT NULL,
+        weight DECIMAL(6,2) NOT NULL DEFAULT 0,
+        reps INTEGER NOT NULL DEFAULT 0,
+        rpe DECIMAL(3,1),
+        completed_at TIMESTAMP,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (workout_exercise_id) REFERENCES workout_exercises (id) ON DELETE CASCADE
+      )
+    `);
+
+    console.log('✅ Core tables verified/created');
   }
 
   async seedDefaultExercises() {
