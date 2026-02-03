@@ -6,9 +6,8 @@ import ApiService from './api';
 import Constants from 'expo-constants';
 
 export class StorageService {
-  // Configuration: Use API in production, local storage in development
-  private static USE_API: boolean = Constants.expoConfig?.extra?.environment === 'production' || 
-                                    process.env.EXPO_PUBLIC_ENVIRONMENT === 'production'; 
+  // Configuration: Backend-only authentication (no local auth fallbacks)
+  private static USE_API: boolean = true;
   private static OFFLINE_MODE: boolean = false;
   
   // Debug: Log storage configuration
@@ -20,14 +19,13 @@ export class StorageService {
     });
   }
 
-  // Storage keys for local fallback
+  // Storage keys for app data only (no user auth data)
   private static STORAGE_KEYS = {
     EXERCISES: 'gym_tracker_exercises',
     WORKOUTS: 'gym_tracker_workouts',
     PERSONAL_RECORDS: 'gym_tracker_personal_records',
     OFFLINE_CHANGES: 'gym_tracker_offline_changes',
-    CURRENT_USER: 'gym_tracker_current_user',
-    USERS: 'gym_tracker_users',
+    CURRENT_USER: 'gym_tracker_current_user', // UI cache only, not for auth
   };
 
   // Network connectivity check
@@ -532,127 +530,157 @@ export class StorageService {
     };
   }
 
-  // User Authentication Methods
-  static async registerUser(username: string, password: string, email?: string): Promise<User | null> {
+  // User Authentication Methods - Backend Only
+  static async registerUser(username: string, password: string, email?: string, firstName?: string, lastName?: string): Promise<User | null> {
     try {
-      // For now, we'll use local storage. In production, this would call the API
-      const users = await this.getLocalUsers();
+      console.log('🔑 Starting registration process for:', username);
       
-      // Check if username already exists
-      const existingUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-      if (existingUser) {
-        return null; // Username already exists
-      }
-
-      // Create new user
-      const newUser: User = {
-        id: generateId(),
+      // Only use API for registration - no local fallback
+      const response = await ApiService.register({
         username: username.trim(),
-        email: email?.trim(),
-        createdAt: new Date().toISOString(),
-        profile: {},
-      };
+        email: email?.trim() || `${username}@example.com`,
+        password,
+        firstName,
+        lastName,
+      });
 
-      // Store user credentials (In production, never store plain text passwords!)
-      const userWithPassword = { ...newUser, password: password };
-      users.push(userWithPassword);
+      console.log('📨 API registration response:', { hasUser: !!response.user });
+
+      if (response.user) {
+        console.log('✅ Registration successful, now logging in...');
+        // After successful registration, automatically login to get JWT token
+        return await this.loginUser(username, password);
+      }
       
-      await AsyncStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(users));
-      await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(newUser));
-      
-      return newUser;
-    } catch (error) {
-      console.error('Error registering user:', error);
+      console.log('❌ Registration failed - no user in response');
       return null;
+    } catch (error) {
+      console.error('❌ Backend registration failed:', error);
+      throw error; // Don't provide local fallback
     }
   }
 
   static async loginUser(username: string, password: string): Promise<User | null> {
     try {
-      // For now, we'll use local storage. In production, this would call the API
-      const users = await this.getLocalUsers();
+      console.log('🔑 Starting login process for:', username);
       
-      const user = users.find(u => 
-        u.username.toLowerCase() === username.toLowerCase() && 
-        (u as any).password === password
-      );
-
-      if (user) {
-        // Remove password from the user object before storing as current user
-        const { password: _, ...userWithoutPassword } = user as any;
-        const currentUser = userWithoutPassword as User;
+      // Only use API for login - no connectivity check or local fallback
+      console.log('📡 Calling backend API for authentication...');
+      const response = await ApiService.login(username, password);
+      console.log('📨 API login response:', { hasToken: !!response.token, hasUser: !!response.user });
+      
+      if (response.token && response.user) {
+        console.log('💾 Storing JWT token in secure storage...');
+        // Store the JWT token securely
+        await ApiService.setAuthToken(response.token);
         
-        await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-        return currentUser;
+        // Verify token was stored
+        const storedToken = await ApiService.hasAuthToken();
+        console.log('✅ Token storage verification:', storedToken);
+        
+        // Store minimal user info for UI purposes only (not for auth)
+        await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
+        
+        console.log('✅ Login successful - user authenticated with backend');
+        return response.user;
       }
-
-      return null; // Invalid credentials
-    } catch (error) {
-      console.error('Error logging in user:', error);
+      
+      console.log('❌ Login failed - missing token or user in response');
       return null;
+    } catch (error) {
+      console.error('❌ Backend authentication failed:', error);
+      throw error; // Don't provide local fallback
     }
   }
 
   static async getCurrentUser(): Promise<User | null> {
     try {
-      const userData = await AsyncStorage.getItem(this.STORAGE_KEYS.CURRENT_USER);
-      if (userData) {
-        return JSON.parse(userData);
+      console.log('👤 Getting current user from backend...');
+      
+      // First check if we have a valid JWT token
+      const hasToken = await ApiService.hasAuthToken();
+      if (!hasToken) {
+        console.log('❌ No auth token found - user not authenticated');
+        await AsyncStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+        return null;
       }
+      
+      // Always validate with backend - no local storage authentication
+      try {
+        console.log('📡 Validating user session with backend...');
+        const response = await ApiService.getCurrentUser();
+        
+        if (response.user) {
+          console.log('✅ User session valid, updating local cache');
+          // Update local cache for UI purposes only
+          await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(response.user));
+          return response.user;
+        }
+      } catch (error: any) {
+        console.error('❌ Backend user validation failed:', error);
+        
+        // If backend says token is invalid/expired, clear everything
+        if (error.message && (error.message.includes('401') || error.message.includes('403'))) {
+          console.log('🚫 Invalid/expired token detected - clearing auth state');
+          await this.logoutUser();
+          return null;
+        }
+        
+        // For network errors, throw so app can handle appropriately
+        throw error;
+      }
+      
+      // If we get here, something went wrong
+      console.log('❌ Unable to validate user session');
       return null;
     } catch (error) {
-      console.error('Error getting current user:', error);
-      return null;
+      console.error('❌ Error getting current user:', error);
+      throw error; // Let the calling code handle the error
     }
   }
 
   static async logoutUser(): Promise<void> {
     try {
-      await AsyncStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
-    } catch (error) {
-      console.error('Error logging out user:', error);
-    }
-  }
-
-  private static async getLocalUsers(): Promise<any[]> {
-    try {
-      const usersData = await AsyncStorage.getItem(this.STORAGE_KEYS.USERS);
-      return usersData ? JSON.parse(usersData) : [];
-    } catch (error) {
-      console.error('Error getting local users:', error);
-      return [];
-    }
-  }
-
-  static async updateUserProfile(userId: string, profile: Partial<User['profile']>): Promise<boolean> {
-    try {
-      const currentUser = await this.getCurrentUser();
-      if (!currentUser || currentUser.id !== userId) {
-        return false;
-      }
-
-      const updatedUser = {
-        ...currentUser,
-        profile: {
-          ...currentUser.profile,
-          ...profile,
-        },
-      };
-
-      await AsyncStorage.setItem(this.STORAGE_KEYS.CURRENT_USER, JSON.stringify(updatedUser));
+      console.log('🚪 Starting logout process...');
       
-      // Also update in users list
-      const users = await this.getLocalUsers();
-      const userIndex = users.findIndex(u => u.id === userId);
-      if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], profile: updatedUser.profile };
-        await AsyncStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(users));
+      // Always try to logout via backend API
+      try {
+        console.log('📡 Notifying backend of logout...');
+        await ApiService.logout();
+        console.log('✅ Backend logout successful');
+      } catch (error) {
+        console.error('❌ Backend logout failed:', error);
+        // Continue with local cleanup even if backend logout fails
       }
 
-      return true;
+      // Clear all local authentication state
+      console.log('🗑️ Clearing local authentication data...');
+      await AsyncStorage.removeItem(this.STORAGE_KEYS.CURRENT_USER);
+      await ApiService.clearAuthToken();
+      
+      console.log('✅ Logout completed - user session terminated');
     } catch (error) {
-      console.error('Error updating user profile:', error);
-      return false;
+      console.error('❌ Error during logout process:', error);
+      throw error; // Re-throw to let AuthContext handle it
+    }
+  }
+
+  // Profile updates - Backend only
+  static async updateUserProfile(profile: Partial<User['profile']>): Promise<boolean> {
+    try {
+      console.log('👤 Updating user profile via backend...');
+      
+      // Only use backend API for profile updates
+      await ApiService.updateProfile(profile);
+      
+      // Refresh user data from backend after update
+      const updatedUser = await this.getCurrentUser();
+      
+      console.log('✅ Profile updated successfully');
+      return !!updatedUser;
+    } catch (error) {
+      console.error('❌ Error updating user profile:', error);
+      throw error; // Don't provide local fallback
     }
   }
 }

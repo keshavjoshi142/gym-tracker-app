@@ -84,45 +84,47 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Stack.Navigator>
-      {!isAuthenticated ? (
-        // Show login screens when not authenticated
-        <Stack.Screen
-          name="Login"
-          component={AuthNavigator}
-          options={{ headerShown: false }}
-        />
-      ) : (
-        // Show main app screens when authenticated
-        <>
+    <NavigationContainer key={isAuthenticated ? 'authenticated' : 'unauthenticated'}>
+      <Stack.Navigator>
+        {!isAuthenticated ? (
+          // Show login screens when not authenticated
           <Stack.Screen
-            name="Home"
-            component={TabNavigator}
+            name="Login"
+            component={AuthNavigator}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="Profile"
-            component={ProfileScreen}
-            options={{ title: 'Profile' }}
-          />
-          <Stack.Screen
-            name="WorkoutDetail"
-            component={WorkoutDetailScreen}
-            options={{ title: 'Workout' }}
-          />
-          <Stack.Screen
-            name="ExerciseDetail"
-            component={ExerciseDetailScreen}
-            options={{ title: 'Exercise Progress' }}
-          />
-          <Stack.Screen
-            name="AddExercise"
-            component={AddExerciseScreen}
-            options={{ title: 'Add Exercise' }}
-          />
-        </>
-      )}
-    </Stack.Navigator>
+        ) : (
+          // Show main app screens when authenticated
+          <>
+            <Stack.Screen
+              name="Home"
+              component={TabNavigator}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{ title: 'Profile' }}
+            />
+            <Stack.Screen
+              name="WorkoutDetail"
+              component={WorkoutDetailScreen}
+              options={{ title: 'Workout' }}
+            />
+            <Stack.Screen
+              name="ExerciseDetail"
+              component={ExerciseDetailScreen}
+              options={{ title: 'Exercise Progress' }}
+            />
+            <Stack.Screen
+              name="AddExercise"
+              component={AddExerciseScreen}
+              options={{ title: 'Add Exercise' }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
@@ -130,9 +132,7 @@ const App: React.FC = () => {
   return (
     <PaperProvider>
       <AuthProvider>
-        <NavigationContainer>
-          <AuthenticatedApp />
-        </NavigationContainer>
+        <AuthenticatedApp />
       </AuthProvider>
     </PaperProvider>
   );

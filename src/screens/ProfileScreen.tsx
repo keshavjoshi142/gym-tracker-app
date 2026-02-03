@@ -23,15 +23,29 @@ const ProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
+    console.log('🔘 Logout button clicked');
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
+          onPress: () => console.log('🚫 Logout cancelled')
+        },
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: logout,
+          onPress: async () => {
+            try {
+              console.log('📱 User confirmed logout, calling logout function...');
+              await logout();
+              console.log('✅ Logout function completed successfully');
+            } catch (error) {
+              console.error('❌ Error during logout:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
         },
       ] 
     );
@@ -108,7 +122,10 @@ const ProfileScreen: React.FC = () => {
         <View style={styles.logoutContainer}>
           <Button
             mode="outlined"
-            onPress={handleLogout}
+            onPress={() => {
+              console.log('🔘 Logout button onPress triggered');
+              handleLogout();
+            }}
             style={styles.logoutButton}
             textColor="#ff5252"
             icon="logout"

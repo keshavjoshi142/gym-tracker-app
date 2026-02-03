@@ -48,10 +48,10 @@ export interface User {
   id: string;
   username: string;
   email?: string;
-  createdAt: string;
+  firstName?: string;
+  lastName?: string;
+  createdAt?: string;
   profile?: {
-    firstName?: string;
-    lastName?: string;
     age?: number;
     weight?: number;
     height?: number;

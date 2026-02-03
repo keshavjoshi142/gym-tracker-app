@@ -39,36 +39,52 @@ const RegisterScreen: React.FC = () => {
   const [formLoading, setFormLoading] = useState(false);
 
   const validateForm = () => {
+    console.log('🤔 validateForm called with:', {
+      username: `'${username.trim()}'`,
+      usernameLength: username.trim().length,
+      password: `'${password}'`,
+      passwordLength: password.length,
+      confirmPassword: `'${confirmPassword}'`,
+      email: `'${email.trim()}'`
+    });
+    
     if (!username.trim()) {
+      console.log('❌ Validation failed: Username is required');
       Alert.alert('Error', 'Username is required');
       return false;
     }
 
     if (username.trim().length < 3) {
+      console.log('❌ Validation failed: Username too short');
       Alert.alert('Error', 'Username must be at least 3 characters long');
       return false;
     }
 
     if (!password.trim()) {
+      console.log('❌ Validation failed: Password is required');
       Alert.alert('Error', 'Password is required');
       return false;
     }
 
     if (password.length < 6) {
+      console.log('❌ Validation failed: Password too short');
       Alert.alert('Error', 'Password must be at least 6 characters long');
       return false;
     }
 
     if (password !== confirmPassword) {
+      console.log('❌ Validation failed: Passwords do not match');
       Alert.alert('Error', 'Passwords do not match');
       return false;
     }
 
     if (email.trim() && !isValidEmail(email.trim())) {
+      console.log('❌ Validation failed: Invalid email format');
       Alert.alert('Error', 'Please enter a valid email address');
       return false;
     }
 
+    console.log('✅ Form validation passed');
     return true;
   };
 
@@ -78,17 +94,41 @@ const RegisterScreen: React.FC = () => {
   };
 
   const handleRegister = async () => {
+    console.log('🔥 handleRegister called - button press detected');
+    console.log('📝 Form values:', { 
+      username: `'${username}'`, 
+      usernameLength: username.length,
+      usernameTrimmed: `'${username.trim()}'`, 
+      usernameTrimmedLength: username.trim().length,
+      password: `'${password}'`,
+      passwordLength: password.length,
+      passwordTrimmed: `'${password.trim()}'`,
+      passwordTrimmedLength: password.trim().length,
+      email: `'${email}'`,
+      formLoading,
+      authLoading: loading
+    });
+    
+    console.log('🤔 Checking form validation...');
     if (!validateForm()) {
+      console.log('❌ Form validation failed');
       return;
     }
-
+    
+    console.log('📱 Form validated, proceeding with registration for:', username);
     setFormLoading(true);
     try {
+      console.log('🚀 Calling register function...');
       const success = await register(username.trim(), password, email.trim() || undefined);
+      console.log('📨 Register result:', success);
+      
       if (!success) {
         Alert.alert('Error', 'Username already exists. Please choose a different username.');
+      } else {
+        console.log('✅ Registration successful!');
       }
     } catch (error) {
+      console.error('❌ Registration error:', error);
       Alert.alert('Error', 'Failed to create account. Please try again.');
     } finally {
       setFormLoading(false);
@@ -186,10 +226,14 @@ const RegisterScreen: React.FC = () => {
                     />
                   }
                 />
-
+                
                 <Button
                   mode="contained"
-                  onPress={handleRegister}
+                  onPress={() => {
+                    console.log('🔘 Button onPress triggered');
+                    console.log('🔘 Current state:', { username: username.trim(), password: password.trim(), formLoading, authLoading: loading });
+                    handleRegister();
+                  }}
                   style={styles.registerButton}
                   loading={formLoading}
                   disabled={formLoading || !username.trim() || !password.trim()}

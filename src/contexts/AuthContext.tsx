@@ -39,10 +39,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthState = async () => {
     try {
+      console.log('🔑 Checking authentication state...');
+      
+      // First check if we have a stored token
+      const ApiService = (await import('@/utils/api')).default;
+      const hasToken = await ApiService.hasAuthToken();
+      
+      if (!hasToken) {
+        console.log('❌ No auth token found, user not authenticated');
+        // Clear any stored user data if no token exists
+        await StorageService.logoutUser();
+        setUser(null);
+        return;
+      }
+      
+      console.log('🔑 Token found, checking user data...');
       const currentUser = await StorageService.getCurrentUser();
-      setUser(currentUser);
+      
+      if (currentUser) {
+        console.log('✅ User found in storage:', currentUser.username);
+        // Verify token is still valid by making an API call
+        try {
+          const userProfile = await ApiService.getCurrentUser();
+          if (userProfile.user) {
+            console.log('✅ Token is valid, user authenticated');
+            setUser(currentUser);
+          } else {
+            console.log('⚠️ Token invalid, clearing user');
+            await StorageService.logoutUser();
+            setUser(null);
+          }
+        } catch (error) {
+          console.log('⚠️ Failed to verify token, clearing authentication:', error.message);
+          // If token verification fails, logout the user
+          await StorageService.logoutUser();
+          setUser(null);
+        }
+      } else {
+        console.log('❌ No user found in storage despite having token, clearing token');
+        await ApiService.clearAuthToken();
+        setUser(null);
+      }
     } catch (error) {
       console.error('Error checking auth state:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -51,11 +91,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
       setLoading(true);
+      console.log('🔑 Attempting login for:', username);
       const user = await StorageService.loginUser(username, password);
       if (user) {
+        console.log('✅ Login successful:', user.username);
         setUser(user);
         return true;
       }
+      console.log('❌ Login failed: Invalid credentials');
       return false;
     } catch (error) {
       console.error('Login error:', error);
@@ -66,6 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (username: string, password: string, email?: string): Promise<boolean> => {
+    console.log('🔑 Attempting registration for:', username);
     try {
       setLoading(true);
       const user = await StorageService.registerUser(username, password, email);
@@ -84,10 +128,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
+      console.log('🚪 Starting logout process...');
+      setLoading(true);
       await StorageService.logoutUser();
       setUser(null);
+      console.log('✅ Logout successful, user state cleared');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ Logout error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
