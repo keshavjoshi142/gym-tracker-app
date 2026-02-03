@@ -205,7 +205,7 @@ const ExercisesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   header: {
     padding: 20,
@@ -214,11 +214,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   searchContainer: {
@@ -242,19 +242,19 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#6750A4',
+    borderColor: '#BB86FC',
     backgroundColor: 'transparent',
   },
   selectedCategoryChip: {
-    backgroundColor: '#6750A4',
+    backgroundColor: '#BB86FC',
   },
   categoryChipText: {
     fontSize: 12,
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: '500',
   },
   selectedCategoryChipText: {
-    color: 'white',
+    color: '#121212',
   },
   listContainer: {
     padding: 20,
@@ -263,6 +263,7 @@ const styles = StyleSheet.create({
   exerciseCard: {
     marginBottom: 15,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   exerciseHeader: {
     flexDirection: 'row',
@@ -276,16 +277,17 @@ const styles = StyleSheet.create({
   exerciseName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   exerciseCategory: {
     fontSize: 14,
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: '500',
   },
   exerciseDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 15,
     lineHeight: 20,
   },
@@ -296,11 +298,12 @@ const styles = StyleSheet.create({
   },
   muscleChip: {
     height: 24,
-    borderColor: '#e0e0e0',
+    borderColor: '#404040',
+    backgroundColor: '#2D2D2D',
   },
   muscleChipText: {
     fontSize: 10,
-    color: '#666',
+    color: '#B0B0B0',
   },
   emptyContainer: {
     flex: 1,
@@ -311,12 +314,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#999',
+    color: '#B0B0B0',
     marginTop: 20,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#ccc',
+    color: '#888888',
     textAlign: 'center',
     marginTop: 10,
     paddingHorizontal: 50,

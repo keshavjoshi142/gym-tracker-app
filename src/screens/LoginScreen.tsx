@@ -77,7 +77,7 @@ const LoginScreen: React.FC = () => {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.header}>
-            <Icon name="fitness-center" size={64} color="#6750A4" />
+            <Icon name="fitness-center" size={64} color="#BB86FC" />
             <Title style={styles.title}>GymTracker</Title>
             <Paragraph style={styles.subtitle}>
               Track your fitness journey
@@ -151,7 +151,7 @@ const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   keyboardContainer: {
     flex: 1,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
   },
   header: {
     alignItems: 'center',
@@ -178,17 +178,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#6750A4',
+    color: '#BB86FC',
     marginTop: 16,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 8,
   },
   loginCard: {
     elevation: 4,
     borderRadius: 12,
+    backgroundColor: '#1E1E1E',
   },
   cardContent: {
     padding: 24,
@@ -198,10 +199,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
+    color: '#FFFFFF',
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#B0B0B0',
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -209,11 +211,12 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2D2D2D',
   },
   loginButton: {
     marginTop: 16,
     paddingVertical: 8,
+    backgroundColor: '#BB86FC',
   },
   footer: {
     alignItems: 'center',
@@ -221,10 +224,10 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#666',
+    color: '#B0B0B0',
   },
   linkText: {
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: 'bold',
   },
 });

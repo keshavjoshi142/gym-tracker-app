@@ -22,33 +22,22 @@ import { useAuth } from '@/contexts/AuthContext';
 const ProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log('🔘 Logout button clicked');
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { 
-          text: 'Cancel', 
-          style: 'cancel',
-          onPress: () => console.log('🚫 Logout cancelled')
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('📱 User confirmed logout, calling logout function...');
-              await logout();
-              console.log('✅ Logout function completed successfully');
-            } catch (error) {
-              console.error('❌ Error during logout:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
-          },
-        },
-      ] 
-    );
+    
+    // Skip confirmation for now to test direct logout
+    console.log('📱 Proceeding with direct logout...');
+    try {
+      console.log('🚪 Calling logout function...');
+      await logout();
+      console.log('✅ Logout function completed successfully');
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
+      // Try to use window.confirm as fallback for web
+      if (typeof window !== 'undefined' && window.confirm) {
+        window.alert('Failed to logout. Please try again.');
+      }
+    }
   };
 
   if (!user) {
@@ -141,7 +130,7 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   content: {
     flex: 1,
@@ -150,6 +139,7 @@ const styles = StyleSheet.create({
   profileCard: {
     marginBottom: 16,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   profileContent: {
     alignItems: 'center',
@@ -159,30 +149,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
-    backgroundColor: '#6750A4',
+    backgroundColor: '#BB86FC',
   },
   username: {
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 16,
     marginBottom: 4,
+    color: '#FFFFFF',
   },
   email: {
     fontSize: 14,
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 8,
   },
   memberSince: {
     fontSize: 12,
-    color: '#999',
+    color: '#888888',
   },
   menuCard: {
     marginBottom: 16,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   menuTitle: {
     fontSize: 18,
     marginBottom: 8,
+    color: '#FFFFFF',
   },
   logoutContainer: {
     marginTop: 24,

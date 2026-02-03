@@ -778,7 +778,7 @@ const WorkoutDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   animatedContainer: {
     flex: 1,
@@ -789,13 +789,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
   },
   successContent: {
-    backgroundColor: 'white',
+    backgroundColor: '#1E1E1E',
     borderRadius: 20,
     padding: 40,
     alignItems: 'center',
@@ -805,7 +805,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 10,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 10,
   },
@@ -824,7 +824,7 @@ const styles = StyleSheet.create({
   },
   successSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -843,6 +843,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flexDirection: 'row',
     alignItems: 'center',
+    color: '#FFFFFF',
   },
   completedBadge: {
     color: '#4CAF50',
@@ -856,7 +857,7 @@ const styles = StyleSheet.create({
   },
   workoutDate: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   statsContainer: {
@@ -864,6 +865,7 @@ const styles = StyleSheet.create({
   },
   statsCard: {
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   stats: {
     flexDirection: 'row',
@@ -876,16 +878,17 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#6750A4',
+    color: '#BB86FC',
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   exerciseCard: {
     marginBottom: 15,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   exerciseHeader: {
     flexDirection: 'row',
@@ -899,10 +902,11 @@ const styles = StyleSheet.create({
   exerciseName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   exerciseCategory: {
     fontSize: 14,
-    color: '#6750A4',
+    color: '#BB86FC',
     marginTop: 5,
   },
   exerciseStats: {
@@ -911,12 +915,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#2D2D2D',
     borderRadius: 6,
   },
   exerciseStat: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     fontWeight: '500',
   },
   setsContainer: {
@@ -931,9 +935,10 @@ const styles = StyleSheet.create({
   setsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   addSetButton: {
-    backgroundColor: '#6750A4',
+    backgroundColor: '#BB86FC',
   },
   setRow: {
     flexDirection: 'row',
@@ -946,6 +951,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     width: 20,
     textAlign: 'center',
+    color: '#FFFFFF',
   },
   setInput: {
     flex: 1,
@@ -953,7 +959,7 @@ const styles = StyleSheet.create({
   },
   noSetsText: {
     fontSize: 14,
-    color: '#999',
+    color: '#888888',
     fontStyle: 'italic',
     textAlign: 'center',
     paddingVertical: 20,
@@ -965,12 +971,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#999',
+    color: '#B0B0B0',
     marginTop: 20,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#ccc',
+    color: '#888888',
     marginTop: 10,
   },
   actionContainer: {
@@ -1005,12 +1011,12 @@ const styles = StyleSheet.create({
   workoutTimer: {
     textAlign: 'center',
     fontSize: 14,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 15,
     fontStyle: 'italic',
     paddingHorizontal: 20,
     paddingVertical: 8,
-    backgroundColor: 'rgba(103, 80, 164, 0.1)',
+    backgroundColor: 'rgba(187, 134, 252, 0.15)',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -1023,7 +1029,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#121212',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1032,13 +1038,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#333333',
   },
   modalSearchContainer: {
     padding: 20,
   },
   modalSearchBar: {
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   modalList: {
     padding: 20,
@@ -1046,14 +1053,16 @@ const styles = StyleSheet.create({
   modalExerciseCard: {
     marginBottom: 10,
     elevation: 1,
+    backgroundColor: '#1E1E1E',
   },
   modalExerciseName: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   modalExerciseCategory: {
     fontSize: 14,
-    color: '#6750A4',
+    color: '#BB86FC',
     marginTop: 5,
   },
   modalMuscleGroups: {

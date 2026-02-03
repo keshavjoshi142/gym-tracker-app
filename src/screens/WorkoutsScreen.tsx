@@ -226,7 +226,7 @@ const WorkoutsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   header: {
     padding: 20,
@@ -235,11 +235,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   listContainer: {
@@ -249,6 +249,7 @@ const styles = StyleSheet.create({
   workoutCard: {
     marginBottom: 15,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   workoutHeader: {
     flexDirection: 'row',
@@ -266,14 +267,15 @@ const styles = StyleSheet.create({
   workoutTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   workoutDate: {
     fontSize: 14,
-    color: '#666',
+    color: '#B0B0B0',
   },
   todayBadge: {
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: 'bold',
   },
   workoutStats: {
@@ -288,24 +290,24 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 13,
-    color: '#666',
+    color: '#B0B0B0',
     marginLeft: 5,
   },
   exercisePreview: {
     marginTop: 5,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#333333',
   },
   exercisePreviewTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 5,
   },
   exercisePreviewText: {
     fontSize: 12,
-    color: '#999',
+    color: '#888888',
     lineHeight: 16,
   },
   emptyContainer: {
@@ -317,12 +319,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#999',
+    color: '#B0B0B0',
     marginTop: 20,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#ccc',
+    color: '#888888',
     textAlign: 'center',
     marginTop: 10,
     paddingHorizontal: 50,

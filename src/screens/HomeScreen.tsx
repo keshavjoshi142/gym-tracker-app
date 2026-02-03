@@ -246,7 +246,7 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   content: {
     flex: 1,
@@ -266,11 +266,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   statsContainer: {
@@ -282,6 +282,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   statContent: {
     alignItems: 'center',
@@ -290,12 +291,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
     marginTop: 5,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 2,
   },
   section: {
@@ -311,14 +312,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   seeAll: {
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: '500',
   },
   workoutCard: {
     marginBottom: 10,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   workoutHeader: {
     flexDirection: 'row',
@@ -329,13 +332,14 @@ const styles = StyleSheet.create({
   workoutTitle: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   workoutDate: {
     fontSize: 14,
-    color: '#666',
+    color: '#B0B0B0',
   },
   todayBadge: {
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: 'bold',
   },
   workoutStats: {
@@ -344,25 +348,27 @@ const styles = StyleSheet.create({
   },
   workoutStat: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
   },
   emptyCard: {
     elevation: 1,
+    backgroundColor: '#1E1E1E',
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#888888',
     textAlign: 'center',
     marginTop: 5,
   },
   recordCard: {
     marginBottom: 10,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   recordHeader: {
     flexDirection: 'row',
@@ -379,15 +385,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 5,
+    color: '#FFFFFF',
   },
   recordDetails: {
     fontSize: 14,
-    color: '#666',
+    color: '#BB86FC',
     marginBottom: 5,
   },
   recordDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#888888',
   },
   fab: {
     position: 'absolute',

@@ -287,7 +287,7 @@ const AddExerciseScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   content: {
     flex: 1,
@@ -299,20 +299,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   card: {
     marginBottom: 15,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 15,
+    color: '#FFFFFF',
   },
   input: {
     marginBottom: 5,
@@ -327,19 +330,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#6750A4',
+    borderColor: '#BB86FC',
     backgroundColor: 'transparent',
   },
   selectedCategoryChip: {
-    backgroundColor: '#6750A4',
+    backgroundColor: '#BB86FC',
   },
   categoryChipText: {
     fontSize: 14,
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: '500',
   },
   selectedCategoryChipText: {
-    color: 'white',
+    color: '#121212',
   },
   selectedMusclesContainer: {
     marginBottom: 15,
@@ -347,7 +350,7 @@ const styles = StyleSheet.create({
   selectedMusclesTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 8,
   },
   selectedMuscles: {
@@ -356,7 +359,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   selectedMuscleChip: {
-    backgroundColor: '#e8f5e8',
+    backgroundColor: '#2D4A2D',
   },
   addMuscleContainer: {
     marginBottom: 15,
@@ -367,7 +370,7 @@ const styles = StyleSheet.create({
   suggestionsTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 8,
   },
   suggestedMuscles: {
@@ -380,19 +383,19 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#f8f9fa',
+    borderColor: '#404040',
+    backgroundColor: '#2D2D2D',
   },
   suggestedMuscleText: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
   },
   actionContainer: {
     marginTop: 20,
     marginBottom: 40,
   },
   saveButton: {
-    backgroundColor: '#6750A4',
+    backgroundColor: '#BB86FC',
   },
   saveButtonContent: {
     paddingVertical: 8,

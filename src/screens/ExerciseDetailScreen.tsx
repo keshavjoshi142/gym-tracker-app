@@ -429,7 +429,7 @@ const ExerciseDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   content: {
     flex: 1,
@@ -441,10 +441,11 @@ const styles = StyleSheet.create({
   exerciseTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#BB86FC',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   statsContainer: {
@@ -465,12 +466,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
     marginTop: 5,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 2,
     textAlign: 'center',
   },
@@ -487,6 +488,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
+    color: '#FFFFFF',
   },
   recordsGrid: {
     flexDirection: 'row',
@@ -500,17 +502,17 @@ const styles = StyleSheet.create({
   recordValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#6750A4',
+    color: '#BB86FC',
   },
   recordLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
     textAlign: 'center',
   },
   recordDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#888888',
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -522,6 +524,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#FFFFFF',
   },
   chart: {
     marginVertical: 8,
@@ -533,13 +536,13 @@ const styles = StyleSheet.create({
   },
   noChartText: {
     fontSize: 14,
-    color: '#999',
+    color: '#B0B0B0',
     marginTop: 10,
     textAlign: 'center',
   },
   noChartSubtext: {
     fontSize: 12,
-    color: '#ccc',
+    color: '#888888',
     marginTop: 5,
     textAlign: 'center',
   },
@@ -549,20 +552,20 @@ const styles = StyleSheet.create({
   },
   singleWorkoutText: {
     fontSize: 16,
-    color: '#6750A4',
+    color: '#BB86FC',
     marginTop: 10,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   singleWorkoutSubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#B0B0B0',
     marginTop: 5,
     textAlign: 'center',
   },
   chartSubtitle: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 10,
   },
   chartLegend: {
@@ -583,7 +586,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
   },
   workoutsCard: {
     marginBottom: 20,
@@ -592,7 +595,7 @@ const styles = StyleSheet.create({
   workoutItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#404040',
   },
   workoutHeader: {
     flexDirection: 'row',
@@ -605,7 +608,7 @@ const styles = StyleSheet.create({
   },
   setsTitle: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     fontWeight: 'bold',
     marginBottom: 5,
   },
@@ -615,7 +618,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   setItem: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#3D3D3D',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -624,12 +627,12 @@ const styles = StyleSheet.create({
   setText: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   workoutSetNotes: {
     fontSize: 10,
-    color: '#666',
+    color: '#888888',
     textAlign: 'center',
     marginTop: 2,
   },
@@ -640,6 +643,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: '#FFFFFF',
   },
   workoutStats: {
     flexDirection: 'row',
@@ -647,14 +651,14 @@ const styles = StyleSheet.create({
   },
   workoutStat: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
   },
   workoutProgress: {
     marginLeft: 10,
   },
   noWorkoutsText: {
     fontSize: 14,
-    color: '#999',
+    color: '#B0B0B0',
     textAlign: 'center',
     paddingVertical: 20,
   },
@@ -670,21 +674,21 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#999',
+    color: '#B0B0B0',
     marginTop: 20,
   },
   expandedSetsView: {
     marginTop: 15,
     padding: 15,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#2D2D2D',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#404040',
   },
   expandedTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6750A4',
+    color: '#BB86FC',
     marginBottom: 15,
     textAlign: 'center',
   },
@@ -692,7 +696,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   setCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#3D3D3D',
     padding: 12,
     marginRight: 10,
     borderRadius: 8,
@@ -701,7 +705,7 @@ const styles = StyleSheet.create({
     elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 1,
   },
   closeButton: {
@@ -713,7 +717,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: 15,
     paddingVertical: 10,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#2D2D2D',
     borderRadius: 8,
   },
   summaryItem: {
@@ -721,25 +725,25 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 5,
   },
   summaryValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6750A4',
+    color: '#BB86FC',
   },
   divider: {
     marginVertical: 15,
   },
   setNumber: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginBottom: 4,
   },
   setNumberText: {
     fontSize: 14,
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: 'bold',
   },
   setDetails: {
@@ -751,16 +755,16 @@ const styles = StyleSheet.create({
   setWeight: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#6750A4',
+    color: '#BB86FC',
   },
   setReps: {
     fontSize: 12,
-    color: '#333',
+    color: '#FFFFFF',
     marginTop: 2,
   },
   setNotes: {
     fontSize: 10,
-    color: '#999',
+    color: '#888888',
     marginTop: 4,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -771,7 +775,7 @@ const styles = StyleSheet.create({
   },
   setVolumeText: {
     fontSize: 14,
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: 'bold',
   },
 });

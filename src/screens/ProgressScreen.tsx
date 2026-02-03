@@ -249,7 +249,7 @@ const ProgressScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   header: {
     padding: 20,
@@ -258,11 +258,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 5,
   },
   statsContainer: {
@@ -274,6 +274,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   statContent: {
     alignItems: 'center',
@@ -282,12 +283,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
     marginTop: 5,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 2,
   },
   searchContainer: {
@@ -304,6 +305,7 @@ const styles = StyleSheet.create({
   progressCard: {
     marginBottom: 15,
     elevation: 2,
+    backgroundColor: '#1E1E1E',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -317,11 +319,12 @@ const styles = StyleSheet.create({
   exerciseName: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   exerciseCategory: {
     fontSize: 14,
-    color: '#6750A4',
+    color: '#BB86FC',
     fontWeight: '500',
   },
   progressBadge: {
@@ -332,7 +335,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 15,
     paddingVertical: 10,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#2D2D2D',
     borderRadius: 8,
     paddingHorizontal: 15,
   },
@@ -341,13 +344,13 @@ const styles = StyleSheet.create({
   },
   recordLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     fontWeight: '500',
   },
   recordValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
     marginTop: 2,
   },
   noDataContainer: {
@@ -356,12 +359,12 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     fontSize: 14,
-    color: '#999',
+    color: '#B0B0B0',
     fontWeight: '500',
   },
   noDataSubtext: {
     fontSize: 12,
-    color: '#ccc',
+    color: '#888888',
     marginTop: 5,
   },
   activityContainer: {
@@ -371,17 +374,17 @@ const styles = StyleSheet.create({
   },
   activityText: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginLeft: 5,
   },
   separator: {
     fontSize: 12,
-    color: '#ccc',
+    color: '#555555',
     marginHorizontal: 10,
   },
   lastRecordText: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
   },
   emptyContainer: {
     flex: 1,
@@ -392,12 +395,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#999',
+    color: '#B0B0B0',
     marginTop: 20,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#ccc',
+    color: '#888888',
     textAlign: 'center',
     marginTop: 10,
     paddingHorizontal: 50,
