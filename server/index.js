@@ -16,6 +16,7 @@ const Database = require('./database/db');
 const exercisesRouter = require('./routes/exercises');
 const workoutsRouter = require('./routes/workouts');
 const progressRouter = require('./routes/progress');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -45,6 +46,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
+app.use('/api/auth', authRouter);
 app.use('/api/exercises', exercisesRouter);
 app.use('/api/workouts', workoutsRouter);
 app.use('/api/progress', progressRouter);
